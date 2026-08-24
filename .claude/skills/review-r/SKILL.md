@@ -14,7 +14,7 @@ Run the comprehensive R code review protocol.
 1. **Identify scripts to review:**
    - If `$ARGUMENTS` is a specific `.R` filename: review that file only
    - If `$ARGUMENTS` is `LectureN`: review all R scripts matching that lecture
-   - If `$ARGUMENTS` is `all`: review all R scripts in `scripts/R/` and `Figures/*/`
+   - If `$ARGUMENTS` is `all`: review all R scripts in `scripts/src/R/`
 
 2. **For each script, launch the `r-reviewer` agent** with instructions to:
    - Follow the full protocol in the agent instructions

@@ -11,20 +11,20 @@ Compile a Beamer slide deck using XeLaTeX with full citation resolution.
 
 ## Steps
 
-1. **Navigate to Slides/ directory** and compile with 3-pass sequence:
+1. **Navigate to drafts/slides/ directory** and compile with 3-pass sequence:
 
 ```bash
-cd Slides
-TEXINPUTS=../Preambles:$TEXINPUTS xelatex -interaction=nonstopmode $ARGUMENTS.tex
-BIBINPUTS=..:$BIBINPUTS bibtex $ARGUMENTS
-TEXINPUTS=../Preambles:$TEXINPUTS xelatex -interaction=nonstopmode $ARGUMENTS.tex
-TEXINPUTS=../Preambles:$TEXINPUTS xelatex -interaction=nonstopmode $ARGUMENTS.tex
+cd drafts/slides
+TEXINPUTS=../latex_files:$TEXINPUTS xelatex -interaction=nonstopmode $ARGUMENTS.tex
+BIBINPUTS=../latex_files:$BIBINPUTS BSTINPUTS=../latex_files:$BSTINPUTS bibtex $ARGUMENTS
+TEXINPUTS=../latex_files:$TEXINPUTS xelatex -interaction=nonstopmode $ARGUMENTS.tex
+TEXINPUTS=../latex_files:$TEXINPUTS xelatex -interaction=nonstopmode $ARGUMENTS.tex
 ```
 
 **Alternative (latexmk):**
 ```bash
-cd Slides
-TEXINPUTS=../Preambles:$TEXINPUTS BIBINPUTS=..:$BIBINPUTS latexmk -xelatex -interaction=nonstopmode $ARGUMENTS.tex
+cd drafts/slides
+TEXINPUTS=../latex_files:$TEXINPUTS BIBINPUTS=../latex_files:$BIBINPUTS BSTINPUTS=../latex_files:$BSTINPUTS latexmk -xelatex -interaction=nonstopmode $ARGUMENTS.tex
 ```
 
 2. **Check for warnings:**
@@ -34,8 +34,8 @@ TEXINPUTS=../Preambles:$TEXINPUTS BIBINPUTS=..:$BIBINPUTS latexmk -xelatex -inte
 
 3. **Open the PDF** for visual verification:
    ```bash
-   open Slides/$ARGUMENTS.pdf          # macOS
-   # xdg-open Slides/$ARGUMENTS.pdf    # Linux
+   open drafts/slides/$ARGUMENTS.pdf          # macOS
+   # xdg-open drafts/slides/$ARGUMENTS.pdf    # Linux
    ```
 
 4. **Report results:**
@@ -52,5 +52,5 @@ TEXINPUTS=../Preambles:$TEXINPUTS BIBINPUTS=..:$BIBINPUTS latexmk -xelatex -inte
 
 ## Important
 - **Always use XeLaTeX**, never pdflatex
-- **TEXINPUTS** is required: your Beamer theme lives in `Preambles/`
-- **BIBINPUTS** is required: your `.bib` file lives in the repo root
+- **TEXINPUTS** is required: your Beamer preamble lives in `drafts/latex_files/`
+- **BIBINPUTS** is required: your `.bib` file lives in `drafts/latex_files/`

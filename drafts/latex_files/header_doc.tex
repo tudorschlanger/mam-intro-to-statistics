@@ -15,14 +15,18 @@
 \usepackage[normalem]{ulem}
 
 % Math
-\usepackage{amsmath,amssymb,amsthm,eucal,bm}
+\usepackage{amsmath,amsthm}
+\usepackage{newpxmath}
+\usepackage{bm}
 \usepackage{mathrsfs}
 \usepackage{dsfont}
 
 % Figures and tables
 \usepackage{graphicx}
+\usepackage{placeins}
 \usepackage{xcolor}
 \usepackage{array,tabularx,booktabs,longtable,subcaption}
+\usepackage{threeparttable}
 \usepackage{pdflscape}
 \usepackage{siunitx}
 
@@ -35,8 +39,15 @@
 % Colored boxes
 \usepackage[most]{tcolorbox}
 
+% Citations (natbib loaded before hyperref to avoid conflicts)
+\usepackage{natbib}
+
 % Miscellaneous
 \usepackage{hyperref}
+% Links stay clickable but render as plain text: `hidelinks` removes BOTH the
+% coloured border boxes (hyperref's default for links/citations/URLs) and any
+% link colouring. Must come after the package load.
+\hypersetup{hidelinks}
 \usepackage{setspace}
 \usepackage{enumitem}
 
@@ -194,3 +205,6 @@
 \newcommand{\blue}[1]{\textcolor{blue}{#1}}
 \newcommand{\pmark}{\textcolor{green}{\checkmark}}
 \newcommand{\xmark}{\textcolor{vermillion}{\texttimes}}
+
+% --- Stata esttab significance stars ---
+\newcommand{\sym}[1]{\ensuremath{^{#1}}}

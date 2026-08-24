@@ -1,0 +1,362 @@
+% =============================================================================
+% [YOUR PROJECT NAME] — Beamer Preamble
+% =============================================================================
+% Usage: Each lecture .tex file should start with:
+%   \documentclass[10pt,english,aspectratio=169]{beamer}
+%   \input{header_slides}
+% Compile: cd drafts/slides && TEXINPUTS=../latex_files:$TEXINPUTS xelatex file.tex
+% =============================================================================
+
+% =============================================================================
+% ---------- Main Packages ----------
+% =============================================================================
+% Figures and tables
+\usepackage{graphicx}
+\usepackage{array,tabularx,booktabs,threeparttable}
+
+% TikZ and pgfplots
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,calc,shapes.geometric}
+
+% Colored boxes
+\usepackage[most]{tcolorbox}
+\usepackage{soul}
+
+% Miscellaneous
+\usepackage{transparent}
+\usepackage{setspace}
+\usepackage[nodayofweek]{datetime}
+\usepackage{hyperref}
+% Links: no color, no boxes (text stays black, borders suppressed)
+\hypersetup{
+  colorlinks=false,
+  allbordercolors={1 1 1},
+  pdfborder={0 0 0},
+  pdfborderstyle={},
+  pdfhighlight={/N},
+  hidelinks
+}
+
+% =============================================================================
+% ---------- Fonts (load before theme!) ----------
+% =============================================================================
+% Select font encoding
+\usepackage[T1]{fontenc}
+% Select text font
+\usepackage{sourcesanspro}
+% Select monospaced font
+\usepackage{sourcecodepro}
+% Define semibold font series
+\DeclareRobustCommand{\sbseries}{\fontseries{sb}\selectfont}
+\DeclareTextFontCommand{\textsb}{\sbseries}
+% Select URL font
+\urlstyle{same}
+
+% =============================================================================
+% ---------- Theme ----------
+% =============================================================================
+\usetheme{Boadilla}
+\usecolortheme{seagull}
+% \usepackage{appendixnumberbeamer}  % disabled: suppresses appendix page output
+% Apply sophisticated fonts
+\usefonttheme{professionalfonts}
+% Set title font
+\setbeamerfont{title}{size=\huge, shape=\scshape}
+% Set author font
+\setbeamerfont{author}{size=\large}
+% Set date font
+\setbeamerfont{date}{size=\Huge, size=\large}
+% Set frame title font
+\setbeamerfont{frametitle}{size=\LARGE,shape=\scshape}
+% Ensure uniform capitalization of frame title, and lower title
+\setbeamertemplate{frametitle}{\vskip3mm\MakeLowercase{\insertframetitle}}
+% Format continuation count for multipage slides
+\setbeamertemplate{frametitle continuation}{[\insertcontinuationcount]}
+% Set the font size for the outline / table of contents
+\setbeamerfont{section in toc}{size=\large}
+% Set list font
+\setbeamerfont{itemize/enumerate subbody}{size=\normalsize} % Second level
+\setbeamerfont{itemize/enumerate subsubbody}{size=\normalsize} % Third level
+% Set theorem fonts
+\setbeamerfont{block title}{series=\sbseries,size=\normalsize} % Title
+% Set button font
+\setbeamerfont{button}{size=\footnotesize}
+
+% =============================================================================
+% ---------- Colors (Okabe-Ito colorblind-friendly palette) ----------
+% =============================================================================
+\definecolor{black}{HTML}{000000}
+\definecolor{orange}{HTML}{E69F00}
+\definecolor{skyblue}{HTML}{56B4E9}
+\definecolor{green}{HTML}{009E73}
+\definecolor{yellow}{HTML}{F0E442}
+\definecolor{blue}{HTML}{0072B2}
+\definecolor{vermillion}{HTML}{D55E00}
+\definecolor{purple}{HTML}{CC79A7}
+
+% Gray tones
+\colorlet{BlackGray}{black!85!}
+\colorlet{DarkGray}{gray!65!}
+\colorlet{LightGray}{gray!30!}
+
+% Semantic colors
+\definecolor{softbg}{HTML}{F5F5F5}
+
+% Highlighter for quoted passages. soul's \hl breaks across lines, which
+% \colorbox cannot -- necessary for marking a phrase inside a flowing quote.
+% Pale tint of the Okabe-Ito yellow so black text stays readable on top.
+\definecolor{hlyellow}{HTML}{FBF3A0}
+\newcommand{\hlight}[1]{{\sethlcolor{hlyellow}\hl{#1}}}
+\definecolor{lightgray}{gray}{0.65}
+
+% =============================================================================
+% ---------- Itemize ----------
+% =============================================================================
+% Set itemized-list item color
+\setbeamercolor{itemize item}{fg=DarkGray} % First level
+\setbeamercolor{itemize subitem}{fg=DarkGray} % Second level
+\setbeamercolor{itemize subsubitem}{fg=DarkGray} % Third level
+% Set numbered-list item color
+\setbeamercolor{enumerate item}{fg=DarkGray} % First level
+\setbeamercolor{enumerate subitem}{fg=DarkGray} % Second level
+\setbeamercolor{enumerate subsubitem}{fg=DarkGray} % Third level
+% Select itemized-list items
+\setbeamertemplate{itemize item}{\textbullet} % First level
+\setbeamertemplate{itemize subitem}{\textendash} % Second level
+\setbeamertemplate{itemize subsubitem}{\textsquare} % Third level
+% Select numbered-list items
+\setbeamertemplate{enumerate item}[default] % First level
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.} % Second level
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.} % Third level
+
+% =============================================================================
+% ---------- Frame Settings ----------
+% =============================================================================
+
+% Frame title (centered with custom spacing)
+\makeatletter
+\setbeamertemplate{frametitle}{
+  \nointerlineskip
+  \rule{0pt}{1.2cm}% Vertical spacing (adjust to move title up/down)
+  \begin{beamercolorbox}[wd=\paperwidth,sep=0.35cm,center]{frametitle}
+    {\usebeamerfont{frametitle}\insertframetitle\par}
+    \ifx\insertframesubtitle\@empty\else
+      \vspace{0.15cm}
+      {\usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}\insertframesubtitle\par}
+    \fi
+  \end{beamercolorbox}
+}
+\makeatother
+
+% Section outline frames
+\setbeamercolor{section in toc}{fg=black}
+\setbeamercolor{section in toc shaded}{fg=black!30}
+\setbeamertemplate{section in toc}[sections numbered]
+
+\AtBeginSection[]{
+  \begin{frame}{Outline}
+    \tableofcontents[currentsection, sectionstyle=show/shaded]
+  \end{frame}
+}
+
+% Margins
+\setbeamersize{
+  text margin left=3em,
+  text margin right=3em
+}
+
+% Header and footer
+\setbeamertemplate{headline}{}
+\setbeamertemplate{footline}{
+  \leavevmode
+  \hbox{
+    \begin{beamercolorbox}[wd=\paperwidth,ht=2.5ex,dp=1.25ex,leftskip=1em,rightskip=1em]{footline}
+      \hfill \insertframenumber
+    \end{beamercolorbox}
+  }
+}
+\setbeamertemplate{navigation symbols}{}
+
+% =============================================================================
+% ---------- Box Environments ----------
+% =============================================================================
+
+% Question box (orange background)
+\newtcolorbox{questionbox}{
+  colback=orange!12,
+  colframe=orange,
+  fonttitle=\bfseries,
+  title={Question},
+  boxrule=0.5pt,
+  arc=2pt,
+  left=6pt,
+  right=6pt,
+  top=4pt,
+  bottom=4pt
+}
+
+% Answer box (green border)
+\newtcolorbox{answerbox}{
+  colback=green!5,
+  colframe=green,
+  fonttitle=\bfseries,
+  title={Answer},
+  boxrule=0.5pt,
+  arc=2pt,
+  left=6pt,
+  right=6pt,
+  top=4pt,
+  bottom=4pt
+}
+
+% Insight box (blue left accent)
+\newtcolorbox{insightbox}{
+  colback=blue!5,
+  colframe=blue,
+  fonttitle=\bfseries,
+  boxrule=0pt,
+  leftrule=3pt,
+  arc=0pt,
+  left=6pt,
+  right=6pt,
+  top=4pt,
+  bottom=4pt
+}
+
+% Definition box (blue border with custom title)
+\newtcolorbox{definitionbox}[1][]{
+  colback=blue!5,
+  colframe=blue,
+  fonttitle=\bfseries,
+  title={#1},
+  boxrule=0.5pt,
+  arc=2pt,
+  left=6pt,
+  right=6pt,
+  top=4pt,
+  bottom=4pt
+}
+
+% Method box (sky blue background)
+\newtcolorbox{methodbox}{
+  colback=skyblue!8,
+  colframe=skyblue!70,
+  fonttitle=\bfseries,
+  boxrule=0.5pt,
+  arc=2pt,
+  left=6pt,
+  right=6pt,
+  top=4pt,
+  bottom=4pt
+}
+
+% Quote box (purple left rule, italic)
+\newtcolorbox{quotebox}{
+  colback=softbg,
+  colframe=purple,
+  fonttitle=\itshape,
+  boxrule=0pt,
+  leftrule=2pt,
+  arc=0pt,
+  left=6pt,
+  right=6pt,
+  top=4pt,
+  bottom=4pt
+}
+
+% =============================================================================
+% ---------- Math ----------
+% =============================================================================
+
+% Avoid "Too many math alphabets" error (set before loading math fonts)
+\newcommand{\hmmax}{0}
+\newcommand{\bmmax}{0}
+
+\usepackage{amsmath,amssymb,amsthm}
+% NOTE: MnSymbol is deliberately NOT loaded. It overrides the extensible
+% delimiter family, which turns every scaled parenthesis into a (mirrored)
+% square bracket -- so \binom, \left( ... \right) and \Bigl( all render wrong.
+% header_doc.tex does not load it either. Re-add only with a delimiter fix.
+% \usepackage{MnSymbol}
+\usepackage[cal=euler, bb=fourier]{mathalpha}
+\usepackage{bm}
+\usepackage[italic, eulergreek, nolessnomore, noparenthesis, noplusnominus, noequal, nohbar]{mathastext}
+
+% Correct spacing for specific letters
+\MTsetmathskips{y}{2mu}{0mu}
+\MTsetmathskips{j}{2mu}{0mu}
+
+% Indicator font
+\usepackage{dsfont}
+
+% --- Spaces (mirrors header_doc.tex / notation_legend.tex) ---
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rplus}{\mathbb{R}_+}
+\newcommand{\Rk}{\mathbb{R}^k}
+
+% --- Probability ---
+\newcommand{\Prob}{\mathbb{P}}
+
+% --- Expectation and moments ---
+\newcommand{\E}{\mathbb{E}}
+\DeclareMathOperator{\var}{var}
+\DeclareMathOperator{\cov}{cov}
+\DeclareMathOperator{\corr}{corr}
+
+% Backwards-compatible aliases (older decks used \Var / \Cov)
+\newcommand{\Var}{\var}
+\newcommand{\Cov}{\cov}
+
+% --- Convergence ---
+\DeclareMathOperator{\plim}{plim}
+\newcommand{\convp}{\xrightarrow{\quad p \quad}}
+\newcommand{\convd}{\xrightarrow{\quad d \quad}}
+
+% --- Relations and distributions ---
+\newcommand{\defeq}{\overset{\text{def}}{=}}
+\newcommand{\ind}{\mathds{1}}
+\newcommand{\Normal}{\mathrm{N}}
+
+% Summation and calculus
+\newcommand{\suminfty}[1]{\sum_{#1=0}^\infty}
+\newcommand{\Lcal}{\mathcal{L}}
+\newcommand{\prtl}[2]{\frac{\partial #1}{\partial #2}}
+\renewcommand{\div}[2]{\frac{d #1}{d #2}}
+
+% Text abbreviations
+\newcommand{\suchthat}{\text{ s.t. }}
+\newcommand{\wrt}{\text{ w.r.t. }}
+
+% Color utilities
+\newcommand{\red}[1]{\textcolor{vermillion}{#1}}
+\newcommand{\blue}[1]{\textcolor{blue}{#1}}
+
+% =============================================================================
+% ---------- Economics Shortcuts ----------
+% =============================================================================
+\newcommand{\OC}{\text{Opportunity Cost}}
+\newcommand{\DWL}{\text{DWL}}
+\newcommand{\pmark}{\textcolor{green}{\checkmark}}
+\newcommand{\xmark}{\textcolor{vermillion}{\texttimes}}
+
+% =============================================================================
+% ---------- Tables ----------
+% =============================================================================
+\usepackage{makecell}
+% esttab significance stars
+\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}
+% Suppress esttab \caption inside Beamer frames
+\renewcommand{\caption}[2][]{}
+
+% =============================================================================
+% ---------- References ----------
+% =============================================================================
+\usepackage[round]{natbib}
+% Note: \bibliographystyle must be set in each .tex file with the correct path
+% e.g., \bibliographystyle{../latex_files/aea}
+% Fix: mathastext noparenthesis breaks natbib \citet parentheses in Beamer.
+% Workaround: build "Author (Year)" manually from \citeauthor + \citeyear.
+\newcommand{\citeay}[1]{\citeauthor{#1} (\citeyear{#1})}
+\newcommand{\citegray}[1]{{\scriptsize\textcolor{DarkGray}{\citeay{#1}}}}%

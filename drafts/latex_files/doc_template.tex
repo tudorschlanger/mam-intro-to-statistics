@@ -1,0 +1,297 @@
+% =============================================================================
+% Finance Academic Paper — Template
+% =============================================================================
+% Usage: copy into drafts/documents/ and rename, then edit.
+% Compile: cd drafts/documents
+%   TEXINPUTS=../latex_files:$TEXINPUTS pdflatex -interaction=nonstopmode file.tex
+%   BIBINPUTS=../latex_files:$BIBINPUTS BSTINPUTS=../latex_files:$BSTINPUTS bibtex file
+%   (then two more pdflatex passes)
+% =============================================================================
+
+\documentclass[letterpaper,11pt]{article}
+\input{../latex_files/header_doc}
+
+% ---------- Template-local setup ----------
+\usepackage[round]{natbib}          % \citet / \citep for author-year citations
+\bibliographystyle{../latex_files/aea}
+\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}   % significance stars in tables
+
+\onehalfspacing
+
+\title{\textbf{Paper Title:\\ A Subtitle That States the Contribution}}
+\author{
+  Your Name\thanks{%
+    Institution, address, email. Acknowledgments, disclosures, and funding go here.
+    Any remaining errors are our own.}
+  \and
+  Coauthor Name\thanks{Institution, email.}
+}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+% =============================================================================
+% Abstract
+% =============================================================================
+\begin{abstract}
+\noindent
+One sentence on the question and why it matters. One sentence on the data
+(source, unit of observation, sample period). One or two sentences on the
+identification strategy or empirical design. Two sentences on the main result,
+with the magnitude stated in economically interpretable units. One sentence on
+the mechanism or interpretation. One sentence on the contribution or
+implication for practice and policy.
+
+\vspace{1em}
+\noindent \textbf{Keywords:} keyword one, keyword two, keyword three
+
+\noindent \textbf{JEL Classification:} G12, G14, G32
+\end{abstract}
+
+\thispagestyle{empty}
+\newpage
+\setcounter{page}{1}
+
+% =============================================================================
+\section{Introduction}
+\label{sec:intro}
+% =============================================================================
+
+\textit{Hook.} Open with the economic phenomenon and the puzzle it creates.
+State why a reader who cares about asset pricing, corporate finance, or
+financial intermediation should care about the answer.
+
+\textit{Research question.} State the question precisely, in one sentence, in
+terms of the object you actually estimate.
+
+\textit{Setting and data.} Describe the empirical setting and why it is
+well-suited to the question. Name the data sources and the sample period.
+
+\textit{Empirical strategy.} Summarize the identification argument in
+non-technical terms: what variation identifies the parameter of interest, and
+what would have to be true for the estimate to be causal.
+
+\textit{Results.} Preview the main findings with magnitudes. Then preview the
+robustness checks and the mechanism evidence that rule out leading alternative
+explanations.
+
+\textit{Related literature.} This paper contributes to three strands of the
+literature. First, it builds on work on [strand one], which establishes
+[finding] \citep{Angrist1996_iv}. That literature takes [assumption] as given;
+we relax it by [what you do differently]. Second, it relates to research on
+[strand two], where \citet{Callaway2021_did} show [finding]; relative to that
+work, our contribution is [the marginal contribution, stated concretely].
+Third, it speaks to the applied literature on [strand three], which has
+documented [stylized fact] but has not addressed [the gap]. We are, to our
+knowledge, the first to [contribution]. \textit{Keep this to a single
+paragraph; be explicit about the marginal contribution rather than merely
+listing citations.}
+
+\textit{Roadmap.} Section~\ref{sec:data} describes the data.
+Section~\ref{sec:method} presents the empirical strategy.
+Section~\ref{sec:results} reports the results. Section~\ref{sec:conclusion}
+concludes.
+
+% =============================================================================
+\section{Data}
+\label{sec:data}
+% =============================================================================
+
+\subsection{Data Sources}
+
+Describe each source: provider, coverage, frequency, and the identifier used to
+merge. For example: security-level returns from CRSP, accounting fundamentals
+from Compustat, institutional holdings from 13F filings.
+
+\subsection{Sample Construction}
+
+State the sample period and every filter applied, in the order applied. Report
+how many observations each filter removes so the sample is reproducible.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Sample Construction}
+  \label{tab:sample}
+  \begin{tabular}{lcc}
+    \toprule
+    Filter & Observations & Firms \\
+    \midrule
+    Raw merged panel      & 000{,}000 & 00{,}000 \\
+    Drop financials       & 000{,}000 & 00{,}000 \\
+    Require non-missing outcome & 000{,}000 & 00{,}000 \\
+    \midrule
+    Final sample          & 000{,}000 & 00{,}000 \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{0.5em}
+  {\footnotesize \textit{Notes:} Sample period is YYYY--YYYY. Each row reports
+  the count remaining after the stated filter is applied.}
+\end{table}
+
+\subsection{Variable Definitions}
+
+Define the outcome, treatment, and controls. Give the exact construction
+(including winsorization and any deflators) here or in
+Appendix~\ref{app:variables}.
+
+\subsection{Summary Statistics}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Summary Statistics}
+  \label{tab:sumstats}
+  \begin{tabular}{lccccc}
+    \toprule
+    Variable & N & Mean & SD & P25 & P75 \\
+    \midrule
+    Outcome $y_{it}$    & 000{,}000 & 0.00 & 0.00 & 0.00 & 0.00 \\
+    Treatment $D_{it}$  & 000{,}000 & 0.00 & 0.00 & 0.00 & 0.00 \\
+    Size (log assets)   & 000{,}000 & 0.00 & 0.00 & 0.00 & 0.00 \\
+    Leverage            & 000{,}000 & 0.00 & 0.00 & 0.00 & 0.00 \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{0.5em}
+  {\footnotesize \textit{Notes:} Continuous variables are winsorized at the 1st
+  and 99th percentiles. Variable definitions are in
+  Appendix~\ref{app:variables}.}
+\end{table}
+
+% =============================================================================
+\section{Methodology}
+\label{sec:method}
+% =============================================================================
+
+\subsection{Empirical Specification}
+
+State the estimating equation and define every term.
+
+\begin{equation}
+  y_{it} = \alpha + \beta \, D_{it} + \gamma' X_{it} + \mu_i + \lambda_t + \varepsilon_{it},
+  \label{eq:main}
+\end{equation}
+
+\noindent where $y_{it}$ is the outcome for firm $i$ in period $t$, $D_{it}$ is
+the treatment, $X_{it}$ is a vector of controls, and $\mu_i$ and $\lambda_t$
+are firm and time fixed effects. The coefficient of interest is $\beta$.
+Standard errors are clustered at the [level]; state why that is the level at
+which treatment is assigned.
+
+\subsection{Identification}
+
+\begin{methodbox}
+\textbf{Identifying assumption.} State it formally, then in words.
+\[
+  \E\!\left[\varepsilon_{it} \mid D_{it}, X_{it}, \mu_i, \lambda_t\right] = 0
+\]
+Explain what would violate it and what evidence you provide against that
+violation.
+\end{methodbox}
+
+\subsection{Threats to Identification}
+
+List the leading alternative explanations and the test that addresses each:
+selection on unobservables, reverse causality, measurement error in the
+treatment, and differential pre-trends.
+
+% =============================================================================
+\section{Results}
+\label{sec:results}
+% =============================================================================
+
+\subsection{Main Results}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Effect of $D$ on $y$}
+  \label{tab:main}
+  \begin{tabular}{lcccc}
+    \toprule
+    & (1) & (2) & (3) & (4) \\
+    \midrule
+    Treatment $D_{it}$ & 0.000\sym{***} & 0.000\sym{***} & 0.000\sym{**} & 0.000\sym{**} \\
+                       & (0.000) & (0.000) & (0.000) & (0.000) \\
+    \midrule
+    Controls           & No  & Yes & Yes & Yes \\
+    Firm FE            & No  & No  & Yes & Yes \\
+    Year FE            & No  & No  & No  & Yes \\
+    Observations       & 000{,}000 & 000{,}000 & 000{,}000 & 000{,}000 \\
+    $R^2$              & 0.00 & 0.00 & 0.00 & 0.00 \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{0.5em}
+  {\footnotesize \textit{Notes:} Standard errors clustered by [level] in
+  parentheses. \sym{*} $p<0.10$, \sym{**} $p<0.05$, \sym{***} $p<0.01$.}
+\end{table}
+
+Interpret the magnitude in economic terms: a one-standard-deviation increase in
+$D$ is associated with a change of X basis points in $y$, or Y\% of the sample
+mean. Compare the estimate to benchmarks in the literature.
+
+\subsection{Robustness}
+
+Report alternative specifications, alternative samples, alternative clustering,
+and placebo tests. Say what each check rules out.
+
+\subsection{Heterogeneity and Mechanisms}
+
+Split the sample along the dimension implied by the theory. State the sign the
+mechanism predicts \textit{before} reporting the split, so the test is
+falsifiable.
+
+\begin{figure}[htbp]
+  \centering
+  % \includegraphics[width=0.8\textwidth]{../../output/figures/event_study.pdf}
+  \caption{Event-Study Estimates}
+  \label{fig:event}
+
+  \vspace{0.5em}
+  {\footnotesize \textit{Notes:} Point estimates and 95\% confidence intervals
+  from Equation~\eqref{eq:main} estimated with leads and lags. Period $-1$ is
+  the omitted category.}
+\end{figure}
+
+% =============================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+% =============================================================================
+
+Restate the question and the answer, with the magnitude. State what the result
+implies for investors, firms, or regulators. Be explicit about the limits of
+external validity: the setting, the sample period, and the population the
+estimate speaks to. Close with the open question your evidence does not settle.
+
+% =============================================================================
+% References
+% =============================================================================
+\newpage
+\bibliography{../latex_files/references}
+
+% =============================================================================
+% Appendix
+% =============================================================================
+\newpage
+\appendix
+\section{Variable Definitions}
+\label{app:variables}
+
+Give the exact construction of each variable: source item, formula, units, and
+any winsorization or deflation.
+
+\section{Additional Results}
+\label{app:additional}
+
+Supporting tables and figures referenced in the main text but not central to
+the argument.
+
+\section{Data Appendix}
+\label{app:data}
+
+Merge procedure, treatment of missing values, and any deviations from the
+standard filters used in the literature.
+
+\end{document}

@@ -35,10 +35,11 @@ Cross-reference all citations in lecture files against bibliography entries.
 
 ## Files to scan:
 ```
-Slides/*.tex
+drafts/slides/*.tex
+drafts/documents/*.tex
 ```
 
 ## Bibliography location:
 ```
-Bibliography_base.bib  (repo root)
+drafts/latex_files/Bibliography_base.bib
 ```

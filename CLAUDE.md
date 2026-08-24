@@ -118,4 +118,10 @@ TEXINPUTS=../scripts/latex_preambles:$TEXINPUTS xelatex -interaction=nonstopmode
 
 | Deck | Beamer | Key Content |
 |------|--------|-------------|
-| | | *(to be filled as decks are created)* |
+| Part 1 | `drafts/slides/part1_random_variables.tex` | Random variables, pdf/cdf, Bernoulli, Binomial, continuous RVs, fat tails. 42 frames. Figures: `scripts/R/part1_figures.R` |
+| Part 2 | `drafts/slides/part2_moments.tex` | Built around one question (portfolio weights): expected value, LLN, variance, covariance/correlation, skewness/kurtosis. 25 frames + appendix. Figures: `scripts/R/part2_figures.R` |
+| Part 3 | `drafts/slides/part3_inference.tex` | Populations and samples, estimators (unbiased/efficient/consistent), standard errors, CLT, hypothesis testing, $p$-values, multiple testing, confidence intervals. 42 frames. Figures: `scripts/R/part3_figures.R` |
+
+**Note:** LaTeX preambles live in `drafts/latex_files/` (not `scripts/latex_preambles/`).
+Compile slides from `drafts/slides/` with `TEXINPUTS=../latex_files:` and
+`BIBINPUTS=../latex_files:`.

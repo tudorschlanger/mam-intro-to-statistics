@@ -1,0 +1,1957 @@
+% =============================================================================
+% MAM Orientation BootCamp — Probability and Statistics Foundations
+% Part 3: Statistical Inference — Learning from Data  (50 min)
+% =============================================================================
+% Technical content: Wooldridge (2016), Appendix C-1 to C-6
+% Figures:           scripts/R/part3_figures.R  ->  output/figures/p3_*.pdf
+% Compile:  cd drafts/slides
+%           TEXINPUTS=../latex_files: xelatex part3_inference.tex
+%           BIBINPUTS=../latex_files: bibtex part3_inference
+%           (then two more xelatex passes)
+% =============================================================================
+% Running example: Berkshire Hathaway against the US market, 563 months.
+% It is introduced on frame 3 as an open question and settled on the Buffett
+% test frame. Every tool in between is motivated as a step toward that answer,
+% so if any of these frames is reordered, check the thread still runs.
+% =============================================================================
+\documentclass[9pt,english,aspectratio=169]{beamer}
+\input{../latex_files/header_slides}
+
+\bibliographystyle{../latex_files/aea}
+
+\graphicspath{{../../output/figures/}}
+
+% Standard error: the companion to Part 2's \text{sd}, written the same way.
+\newcommand{\se}{\text{se}}
+% ... and sd itself, so \sd(Xbar) renders identically to Part 2's \text{sd}(X).
+\newcommand{\sd}{\text{sd}}
+
+% ---------- Title ----------
+\title{\textbf{Statistical Inference}}
+\subtitle{Probability and Statistics Foundations --- Part 3}
+\author{Instructor: Tudor Schlanger}
+\date{Master's in Asset Management \\ Yale School of Management}
+
+\begin{document}
+
+% =============================================================================
+% Opening
+% =============================================================================
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Outline}
+
+  \vspace{0.8em}
+  \large
+  \begin{enumerate}
+    \item[\textbf{1.}] Random variables and distributions \\
+          {\small\textcolor{DarkGray}{How do we describe an uncertain outcome mathematically?}}
+          \vspace{0.5em}
+    \item[\textbf{2.}] Population parameters and moments \\
+          {\small\textcolor{DarkGray}{If we know the distribution, which summary numbers matter?}}
+          \vspace{0.5em}
+    \item[\textbf{3.}] \textbf{Statistical inference} \\
+          {\small\textcolor{DarkGray}{If we \emph{don't} know the distribution, how do we learn it from data?}}
+  \end{enumerate}
+
+\end{frame}
+
+% \begin{frame}{Question of the lesson}
+
+%   \begin{columns}[T]
+%     \begin{column}{0.46\textwidth}
+%       \vspace{1.2em}
+%       From November 1976 to December 2023, \$1 invested in Berkshire Hathaway
+%       became \textbf{\$8,017}.
+
+%       \vspace{0.5em}
+%       The same \$1 in the US market became \textbf{\$184}.
+
+%       \vspace{0.5em}
+%       That is $21.9\%$ per year against $12.4\%$ --- for \textbf{47 years}.
+%     \end{column}
+%     \pause
+%     \begin{column}{0.52\textwidth}
+%       \vspace{0.3em}
+%       \includegraphics[width=\textwidth]{p3_qotd_buffett.pdf}
+
+%       \vspace{0.1em}
+%       {\tiny\textcolor{lightgray}{Monthly total returns, Nov 1976 -- Dec 2023,
+%       563 months.}}
+%     \end{column}
+%   \end{columns}
+
+%   \vspace{0.3em}
+%   \begin{questionbox}
+%     Is that \textbf{skill}, or is it \textbf{luck}?
+%   \end{questionbox}
+
+% \end{frame}
+
+% -----------------------------------------------------------------------------
+% Bridge from Part 2. Part 2 closed by answering the risk--return question with
+% E[R_p]/sd(R_p); this frame points out that both are unknown, which is the
+% entire reason Part 3 exists. It replaces the old "Why We Cannot Answer That
+% Yet" frame, whose two methodboxes now live on the next frame.
+% Keep the ratio identical to Part 2's closing frame -- sd, not var.
+% -----------------------------------------------------------------------------
+\begin{frame}{Answering the Risk--Return Question}
+
+
+  \begin{columns}
+    \begin{column}{0.46\textwidth}
+      Part 2 ended here:
+      \[
+        \frac{\E[R_p]}{\text{sd}(R_p)},
+      \]
+      \vspace{-1.1em}      \pause
+    \end{column}
+    \begin{column}{0.50\textwidth}
+        \vspace{0.6em}
+        \begin{insightbox}
+          Both quantities here --- $\E[R_p]$ and $\text{sd}(R_p)$ --- are \textbf{true but unknown} numbers. 
+        \end{insightbox}
+      \pause
+        \begin{questionbox}
+          How do we figure them out? 
+        \end{questionbox}
+        \pause
+        \begin{answerbox}
+          Using inference. 
+        \end{answerbox}
+    \end{column}
+  \end{columns}
+
+    %   \vspace{0.3em}
+    % There are \textbf{two ways} of figuring out what they are. Doing so is
+    % called \textbf{inference}.
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% The organizing frame for the rest of the hour: sections 1-2 are the left
+% column, section 3 is the right column. If the deck is reordered, this frame
+% is the promise that has to keep matching.
+% -----------------------------------------------------------------------------
+
+
+
+
+
+% =============================================================================
+% \section{Samples and Estimators}
+% =============================================================================
+
+% -----------------------------------------------------------------------------
+% Carried over from Part 2 deliberately: the true-vs-observed split is the one
+% idea the rest of the deck is built on, and it is worth seeing twice. The Part 2
+% version closes with the LLN; this one closes by generalizing, because the next
+% frame is that generalization.
+% -----------------------------------------------------------------------------
+\begin{frame}{Expected value $\neq$ Sample mean}
+
+  Recall from Part 2 --- these are two different objects, and only one of them
+  can be seen.
+
+  \vspace{0.8em}
+
+  \centering
+  \renewcommand{\arraystretch}{1.3}
+  {
+  \begin{tabular}{@{} l p{4.3cm} p{4.9cm} @{}}
+    \toprule
+     & \textbf{Expected value} & \textbf{Sample mean} \\
+    \midrule
+    Symbol & $\E[X]$ & $\bar{X}$ \\
+
+    Formula & $\sum_j x_j\, f(x_j)$
+            & $\frac{1}{n}\sum_{i=1}^{n} x_i$ \\
+
+    Built from & the \textbf{true} distribution $f(x)$
+               & $n$ \textbf{observed} data points \\
+
+    Is it random? & \textbf{No} --- one fixed number
+                  & \textbf{Yes} --- a new sample gives a new value \\
+    \bottomrule
+  \end{tabular}}
+  \pause
+
+  \vspace{1.2em}
+  \raggedright
+  \begin{insightbox}
+    $\E[X]$ is the \textbf{true} value, and it is unknown.\\
+    
+    $\bar{X}$ is \textbf{known}, because it is built from what we observed --- but it is not the thing we wanted.
+  \end{insightbox}
+
+\end{frame}
+
+\begin{frame}{Remember the coin flip example?}
+  \centering 
+    \includegraphics[width=0.8\textwidth]{p2_lln_coinflip.pdf}
+\end{frame}
+
+
+
+\begin{frame}{Parameter $\neq$ Statistic}
+
+  The same split as $\E[X]$ versus $\bar{X}$, now stated for \emph{any} parameter.
+  % The Estimator and payoff boxes used to stack full-width at the foot, which
+  % forced 1em here to stay on the frame. Side by side they cost one box of
+  % height instead of two, so 2em fits again.
+  \vspace{2em}
+
+  \centering
+  \renewcommand{\arraystretch}{1.3}
+  {
+  \begin{tabular}{@{} l p{4.6cm} p{4.9cm} @{}}
+    \toprule
+     & \textbf{Population parameter} & \textbf{Sample statistic} \\
+    \midrule
+    What it is & It describes true distribution
+               & It is a function of the sample \\
+
+    Examples & $\mu$, \; $\sigma^2$, \; $\corr(X,Y)$
+             & $\bar{X}$, \; $s^2$, \; $\widehat{\corr}(X,Y)$ \\
+
+    Is it random? & \textbf{No} --- fixed, and unknown
+                  & \textbf{Yes} --- a different draw gives different numbers \\
+
+    Can we see it? & Never & Always \\
+    \bottomrule
+  \end{tabular}}
+
+  \vspace{0.5em}
+  % Estimator left, payoff right: define the object, then say what it is for.
+  % equal height group so the two boxes line up and the right one does not
+  % shift when it appears; it settles on the second XeLaTeX pass.
+  {\tcbset{equal height group=PS}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \onslide<2->{
+      \begin{definitionbox}[Estimator]
+        A sample statistic chosen to infer the population parameter.
+      \end{definitionbox}}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \onslide<3->{
+      \begin{insightbox}
+        Inference is all about using the \textbf{sample statistic} to say something about the \textbf{population parameter}.
+      \end{insightbox}}
+    \end{column}
+  \end{columns}}
+
+\end{frame}
+
+
+\begin{frame}{The Two Fundamental Types of Inference}
+
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{definitionbox}[Estimation]
+        Use the data to put a \textbf{number} on the unknown parameter --- and
+        say how good that number is.
+      \end{definitionbox}
+
+      \vspace{0.4em}
+      {\small ``My best guess of $\E[R_s]$ is $1\%$ per month.''}
+
+      \vspace{0.6em}
+      \begin{insightbox}
+        A \textbf{positive} approach: it says what the population parameter \emph{is}.
+      \end{insightbox}
+    \end{column}
+    \pause
+    \begin{column}{0.48\textwidth}
+      \begin{definitionbox}[Hypothesis testing]
+        Use the data to rule a claim \textbf{out} --- to say what the unknown population parameter is \emph{not}.
+      \end{definitionbox}
+
+      \vspace{0.4em}
+      {\small ``Whatever $\E[R_s]$ is, it's very unlikely that it is zero.''}
+
+      \vspace{0.6em}
+      \begin{insightbox}
+        A \textbf{negative} approach: it never confirms, it only rejects. 
+      \end{insightbox}
+    \end{column}
+  \end{columns}
+
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% The flow diagram is the spine of the whole deck: estimation runs left to
+% right, and the sampling distribution (introduced four frames later) is what
+% happens when the middle box is redrawn over and over. Keep the three boxes in
+% this order wherever they reappear.
+% -----------------------------------------------------------------------------
+
+
+\begin{frame}{Estimation}
+
+  % The flow diagram runs the full frame width rather than sitting in a column:
+  % at half width the third box is pushed off the slide. It is also the right
+  % emphasis -- this picture is the spine of the deck.
+  \vspace{0.3em}
+  \begin{center}
+  \begin{tikzpicture}[font=\small,
+                      box/.style={draw, rounded corners=2pt, align=center,
+                                  minimum height=1.0cm, inner sep=5pt}]
+    \node[box, fill=blue!8, draw=blue, text width=2.6cm] (pop)
+      {\textbf{Population}\\[0.15em] {\scriptsize $f(x)$, \; $\mu$}};
+    \node[box, fill=orange!12, draw=orange, text width=2.6cm, right=2.0cm of pop] (samp)
+      {\textbf{Sample}\\[0.15em] {\scriptsize $X_1, \ldots, X_n$}};
+    \node[box, fill=green!8, draw=green, text width=2.6cm, right=2.0cm of samp] (est)
+      {\textbf{Estimator}\\[0.15em] {\scriptsize $\bar{X}$}};
+
+    \draw[-{Latex[length=2mm]}, thick, DarkGray] (pop) -- (samp)
+      node[midway, above, font=\scriptsize] {draw $n$};
+    \draw[-{Latex[length=2mm]}, thick, DarkGray] (samp) -- (est)
+      node[midway, above, font=\scriptsize] {input to};
+
+    \draw[-{Latex[length=2mm]}, thick, vermillion, dashed]
+      (est.south) .. controls +(0,-0.85) and +(0,-0.85) .. (pop.south)
+      node[midway, below, font=\scriptsize, vermillion]
+        {use the estimate to infer $\mu$};
+  \end{tikzpicture}
+  \end{center}
+
+  \pause 
+  % \begin{definitionbox}[Estimation]
+  %   Using a \textbf{rule} applied to sample data to infer the value of an
+  %   unknown population parameter.
+  % \end{definitionbox}
+  % \pause
+
+  \vspace{0.5em}
+  \renewcommand{\arraystretch}{1.35}
+  \centering
+  \begin{tabular}{@{} l l p{6.0cm} @{}}
+    \toprule
+    \textbf{Parameter} & $\mu$
+      & Fixed, unknown. \\
+    \textbf{Estimator} & $\bar{X} = \frac{1}{n}\sum_{i=1}^{n} X_i$ 
+      & A \textbf{function} of data. A random variable.  \\
+    \textbf{Estimate} & $\bar{X} = 0.48\%$
+      & The \textbf{number} the function returns on the sample you have. \\
+    \bottomrule
+  \end{tabular}
+
+
+\end{frame}
+
+
+% -----------------------------------------------------------------------------
+% i.i.d. is asserted on the arrow of the previous frame and leaned on again in
+% the CLT statement, so it gets defined here, once, before any sampling starts.
+% The figure teaches it by counter-example -- one letter broken per panel --
+% because the assumption is far easier to see failing than holding.
+% See scripts/R/part3_figures.R, section 2a.
+% -----------------------------------------------------------------------------
+
+\begin{frame}{Sampling from the Population}
+
+  % Definition left, one actual draw right: the picture carries no mu line and
+  % no Xbar line, because at this point the only claim is "these n ticks came
+  % out of that curve". Estimates arrive on the next frame.
+
+  
+  \begin{columns}
+    \begin{column}{0.45\textwidth}
+        Before doing any estimation, we need data! The most common way of sampling is the ``random'' sample. 
+
+        \vspace{0.5em}
+
+      \begin{definitionbox}[Random sample]
+        $X_1, \ldots, X_n$ is an \textbf{i.i.d. random sample} from a population with
+        pdf $f(x)$ if the draws are \textbf{independent} and
+        \textbf{identically distributed} --- each from that same $f(x)$.
+      \end{definitionbox}
+    \end{column}
+    \pause
+    \begin{column}{0.53\textwidth}
+      \vspace{-0.2em}
+      \includegraphics[width=\textwidth]{p3_one_draw.pdf}
+
+      \vspace{-0.3em}
+      {\tiny\textcolor{lightgray}{One draw of $n = 25$: the
+      \textcolor{orange}{ticks} came out of the \textcolor{blue}{curve}.}}
+
+            \begin{insightbox}
+    All $25$ ticks came out of the \textbf{same} curve, and the curve does not
+    move between draws --- that is the \textbf{identically distributed}. 
+  \end{insightbox}
+    \end{column}
+  \end{columns}
+
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% The counter-examples get their own frame: definition + one draw + three panels
+% + caveat runs 41pt over on a single slide, and the panels are the part that
+% needs room. Each breaks exactly one letter of i.i.d.
+% Figure: scripts/R/part3_figures.R, section 2a.
+% -----------------------------------------------------------------------------
+\begin{frame}{Independence}
+
+  \vspace{1.2em}
+  \begin{columns}[T]
+    \begin{column}{0.40\textwidth}
+      \begin{definitionbox}[Independent]
+        Knowing $X_1$ tells you nothing about $X_2$: the joint pdf factors,
+        \[
+          f(x_1, \ldots, x_n) = f(x_1) \cdots f(x_n).
+        \]
+      \end{definitionbox}
+    \end{column}
+    \pause
+    \begin{column}{0.57\textwidth}
+      % Both panels share one mean and one marginal sd, so they differ in
+      % dependence and in nothing else. Stacked on a shared Month axis, so the
+      % lower panel's runs read against the upper panel's resetting.
+      \includegraphics[width=\textwidth]{p3_iid.pdf}
+
+      \vspace{0.2em}
+      {\tiny\textcolor{lightgray}{Same $\mu$ (blue) and same marginal
+      $\sigma$ in both; dashed lines are $\mu \pm 2\sigma$.}}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% This frame now opens the estimation thread, so it carries the "suppose we can
+% see the population" setup that used to sit on "One Sample, One Number". It
+% says "sample mean", not "estimate" -- that word is not defined until two
+% frames later.
+% -----------------------------------------------------------------------------
+\begin{frame}{A New Sample, a New Estimate}
+
+  Take the distribution monthly US stock returns. 
+  
+  Assume Normal, $\mu = 1\%$ and $\sigma = 4.28\%$.
+  
+  Randomly draw $n = 25$ months from it. Do it three times.
+
+  \pause 
+  \vspace{0.2em}
+  \centering
+  % 0.95 rather than full width: at \textwidth this frame runs 3pt over.
+  \includegraphics[width=0.95\textwidth]{p3_three_samples.pdf}
+
+  % \vspace{0.2em}
+  % \raggedright
+  % \pause
+  % Same population, same $\mu = 1\%$ \textcolor{blue}{\textbf{(solid)}}, same
+  % $n$. Three different
+  % \textcolor{vermillion}{\textbf{sample means (dashed)}}: $0.48$, $1.48$, $-0.12$.
+  \pause
+
+ \vspace{0.2em}
+  \begin{insightbox}
+   There is quite a bit of variance in the estimator $\bar{X}$! 
+  \end{insightbox}
+
+\end{frame}
+
+
+
+% -----------------------------------------------------------------------------
+% Placed after the three draws on purpose: "estimator" and "estimate" are far
+% easier to separate once the student has just watched one rule produce three
+% different numbers. The next frame gives the estimator a distribution, which
+% only makes sense if the rule/number split is already in place.
+% -------------------------------------------------------
+
+
+\begin{frame}{The Estimator Has a Distribution of Its Own}
+
+  \begin{columns}[T]
+    \begin{column}{0.42\textwidth}
+      \vspace{0.3em}
+      % Same n = 25 as the three-sample frame: this figure is literally those
+      % draws repeated twenty thousand times. The +/- 2.5%% claim below is
+      % 3 x sd(Xbar) = 3 x 0.86%%, so it moves if n ever does.
+      Now do it not three times but twenty thousand, with $n = 25$ months each
+      time. The estimates trace out a distribution.
+
+      \vspace{0.6em}
+      \begin{definitionbox}[Sampling distribution]
+        The distribution of an estimator across all the samples that
+        \emph{could} have been drawn.
+      \end{definitionbox}
+
+      \pause 
+
+      % \vspace{0.6em}
+      % \begin{insightbox}
+      %   This is the central object of the hour. Everything left to do ---
+      %   standard errors, the CLT, $t$ statistics, $p$-values, confidence
+      %   intervals --- is a statement about \textbf{this curve}.
+      % \end{insightbox}
+    \end{column}
+    \begin{column}{0.54\textwidth}
+      \vspace{1.0em}
+      \includegraphics[width=\textwidth]{p3_sampling_dist.pdf}
+     
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+
+
+\begin{frame}{Variance of the estimator}
+
+  \begin{columns}[T]
+    \begin{column}{0.54\textwidth}
+      \vspace{0.2em}
+      We want $\sd(\bar{X})$ to understand how volatile $\bar{X}$ can be. Using VAR.3, with the covariance term deleted because the draws are assumed \textbf{independent}:
+      \begin{align*}
+        \var\!\left(\bar{X}\right)
+          &= \var\!\left(\frac{1}{n}\sum_{i=1}^{n} X_i\right) \\[0.2em]
+          &= \frac{1}{n^2}\sum_{i=1}^{n}\var(X_i)
+            \qquad {\scriptsize\textcolor{DarkGray}{\text{(VAR.2, then independence)}}} \\[0.2em]
+          &= \frac{1}{n^2}\, n\, \sigma^2
+           \;=\; \frac{\sigma^2}{n}.
+      \end{align*}
+
+      \vspace{0.3em}
+      Taking the square root:
+      \[
+        \text{sd}\!\left(\bar{X}\right) = \frac{\sigma}{\sqrt{n}}.
+      \]
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \vspace{1.5em}
+      % \pause
+      % \begin{insightbox}
+      %  Volatility decreases at the rate $\sqrt{n}$!
+      % \end{insightbox}
+      \pause
+
+      \vspace{0.8em}
+      \begin{definitionbox}[Standard error]
+        The standard error is an \textit{estimate} of the standard deviation of the estimator:
+        \[
+          \se\!\left(\bar{X}\right) = \frac{s}{\sqrt{n}}.
+        \]
+        Note: Put $s$ in place of the unknown $\sigma$!
+      \end{definitionbox}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.2em}
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% The payoff of sd(Xbar) = sigma/sqrt(n): sigma is the population's, n is yours.
+% Reuses the consistency material from the appendix frame -- same figure, same
+% definition -- because this is where the "more data" lever belongs in the
+% narrative. The appendix "Consistency" frame is now the detailed backup.
+% The catch -- better, but only at rate sqrt(n) -- now lives past \appendix and
+% is reached by the button under the insightbox, so the main run keeps the
+% lever without spending a frame on the rate.
+% -----------------------------------------------------------------------------
+\begin{frame}[label=estimation-better]{How to Make Estimation Better}
+
+  \begin{columns}[T]
+    \begin{column}{0.42\textwidth}
+      \vspace{0.2em}
+      $\text{sd}(\bar{X}) = \sigma/\sqrt{n}$ has two parts. 
+      \vspace{1em}
+
+      You can't change $\sigma$, but you can change $n$. 
+     \pause
+
+      \vspace{1em}
+
+      % Stated as the LLN rather than as consistency: Part 2 already proved this
+      % one with coin flips, so it lands as a callback instead of a new
+      % definition. Notation matches Part 2's frame exactly.
+      \begin{definitionbox}[Law of Large Numbers]
+        \[
+          \bar{X} \;\longrightarrow\; \mu
+          \qquad\text{as } n \to \infty.
+        \]
+        The larger the sample, the closer the sample mean sits to the
+        population mean.
+      \end{definitionbox}
+      \pause
+
+      \vspace{0.5em}
+      {\small We saw this in Part 2 with the share of coin flips that are heads.}
+    \end{column}
+    \begin{column}{0.54\textwidth}
+      \vspace{1.2em}
+      \includegraphics[width=\textwidth]{p3_consistency.pdf}
+
+      \pause
+
+      \vspace{0.3em}
+      \begin{insightbox}
+        The distribution \textbf{narrows}. More data buys \textbf{precision}.
+      \end{insightbox}
+
+      \vspace{0.4em}
+      \hfill\hyperlink{diminishing-gains}{\beamerbutton{But how fast?}}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+
+% -----------------------------------------------------------------------------
+% Sets up the CLT by naming what is missing. Three things describe a
+% distribution; the previous frames derived two of them, and the third is the
+% only thing standing between an estimate and a decision. The "distance into a
+% probability" line is the reason the next three frames exist -- point back here
+% when a student asks why the CLT was necessary.
+% -----------------------------------------------------------------------------
+\begin{frame}{Distribution of $\bar{X}$}
+
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \vspace{0.3em}
+      Assuming i.i.d.\ sampling, we know two of the three things that describe
+      the distribution of $\bar{X}$:
+
+      \vspace{0.5em}
+      \begin{methodbox}
+        \textbf{Where it sits:} \; $\E\!\left[\bar{X}\right] = \mu$
+        \\[0.4em]
+        \textbf{How wide it is:} \;
+        $\text{sd}\!\left(\bar{X}\right) = \sigma/\sqrt{n}$ \\[0.4em]
+        \textbf{What shape it is:} \;
+        \textcolor{vermillion}{\textbf{?}}
+      \end{methodbox}
+      \pause
+
+      \vspace{0.5em}
+      Without the shape, ``$\bar{X}$ sits $2.5$ standard errors away from
+      $\mu$'' is only a \textbf{distance}. It cannot be turned into probability.
+    \end{column}
+    \pause
+    \begin{column}{0.46\textwidth}
+      \vspace{0.3em}
+      \begin{questionbox}
+        If $n$ is \textbf{large}, can we get a non-degenerate distribution of
+        $\bar{X}$?
+      \end{questionbox}
+      \pause
+
+      \vspace{0.4em}
+      \begin{answerbox}
+        Yes, we can get a Normal! But we need a trick.
+      \end{answerbox}
+      
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+\begin{frame}{The Central Limit Theorem}
+
+  \vspace{0.2em}
+  \begin{definitionbox}[Central Limit Theorem]
+    Let $X_1, \ldots, X_n$ be i.i.d.\ with mean $\mu$ and \emph{finite} variance
+    $\sigma^2$. Then, as $n$ grows,
+    \[
+      Z = \frac{\bar{X} - \mu}{\sigma / \sqrt{n}}
+      \;\;\convd\;\; \Normal(0, 1).
+    \]
+  \end{definitionbox}
+  \pause
+
+  \vspace{0.4em}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \vspace{0.5em}
+      \begin{insightbox}
+        The shape does not depend on the population at all! $X$ can be any distribution, discrete or continuous!
+      \end{insightbox}
+    \end{column}
+    \pause
+    \begin{column}{0.48\textwidth}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.2em}
+
+\end{frame}
+
+\begin{frame}{Watching It Happen}
+
+  \centering
+  \includegraphics[width=0.76\textwidth]{p3_clt_grid.pdf}
+
+  \vspace{0.1em}
+  {\tiny\textcolor{lightgray}{A deliberately hideous population:
+  $\text{Exp}(1.6)$ with probability $0.85$, else $3 + \text{Exp}(0.8)$ ---
+  right-skewed (skewness $+2.1$), spiky, bimodal. The $n = 1$ and $n = 2$ spikes
+  run off the top; blue curve is the standard normal.}}
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% The control experiment for the previous frame: the same 30,000 draws with the
+% sqrt(n) taken out, so the only difference between the two pictures is that one
+% factor. Without it there is no limiting shape to see -- which is what makes
+% the standardisation on the previous frame a choice rather than a formality.
+% Figure: scripts/R/part3_figures.R, section 10b.
+% -----------------------------------------------------------------------------
+\begin{frame}{Why Divide by $\sigma/\sqrt{n}$, Not $\sigma$?}
+
+  \centering
+  \includegraphics[width=0.76\textwidth]{p3_clt_no_sqrtn.pdf}
+
+  \vspace{0.1em}
+  {\tiny\textcolor{lightgray}{The same $30{,}000$ draws as the previous slide,
+  divided by $\sigma$ instead of $\sigma/\sqrt{n}$. The $n = 100$ spike runs
+  off the top.}}
+  \pause
+
+  \vspace{0.3em}
+  \raggedright
+  \begin{insightbox}
+    Without the $\sqrt{n}$ there is no shape to converge to --- everything just
+    collapses onto $\mu$. \\
+    
+    That collapse is due to the \textbf{Law of Large Numbers}.
+  \end{insightbox}
+
+\end{frame}
+
+% =============================================================================
+% \section{Hypothesis Testing}
+% =============================================================================
+
+\begin{frame}{From Estimating to Hypothesis Testing}
+
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \vspace{0.3em}
+      Estimation produces a number and an uncertainty.\vspace{1em}
+      
+      This is more ambitious that saying: ``I want to know if the true value is \textit{not} $\mu$.''
+
+      \vspace{0.5em}
+      \begin{definitionbox}[The two hypotheses]
+        \begin{itemize}
+          \item $H_0$, the \textbf{null} hypothesis. This is presumed true. We try to reject.
+          
+          \item $H_1$, the \textbf{alternative} hypothesis.  
+        \end{itemize}
+      \end{definitionbox}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \vspace{1.1em}
+      \pause
+      \begin{insightbox}
+        $H_0$ is \textbf{presumed true}. We never prove it --- we either \textit{reject} it or \textit{fail to reject} it.
+      \end{insightbox}
+      \pause
+
+      \vspace{0.5em}
+      \begin{quotebox}
+       Example: A trial does not find the defendant innocent. It finds them \emph{not guilty}. 
+      \end{quotebox}
+    \end{column}
+  \end{columns}
+
+  % The question from the top of the hour, now asked in the form the machinery
+  % of this section can actually answer. The next frame writes it down.
+
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% Four worked nulls before the Buffett one, so the pattern is visible before it
+% is used: the null is always the claim that the interesting thing is ABSENT.
+% The inflation row is there on purpose -- it is the one null that is not zero,
+% which is what mu_0 in the t statistic three frames later is for.
+% -----------------------------------------------------------------------------
+\begin{frame}{Examples of Nulls and Alternatives}
+
+  % Ragged right, not justified, and row skips rather than \arraystretch.
+  % No \pause inside the tabular: beamer's pause breaks the row structure, and
+  % each H_0 cell rendered a row above its own question. The table arrives
+  % whole; only the insightbox is staged.
+  \vspace{0.2em}
+  {\small
+  \begin{tabular}{@{} >{\raggedright\arraybackslash}p{4.9cm}
+                       >{\raggedright\arraybackslash}p{4.9cm}
+                       >{\raggedright\arraybackslash}p{3cm} @{}}
+    \toprule
+    \textbf{The question} & \textbf{$H_0$: null} &
+      \textbf{$H_1$: alternative} \\[0.3em]
+    \midrule
+    Does this fund manager add value? &
+      No added value: $\alpha = 0$ &
+      $\alpha > 0$ \\[0.7em]
+    Do earnings surprises move the price? &
+      No reaction: zero abnormal returns &
+      $\alpha \neq 0$ \\[0.7em]
+    Does a higher minimum wage affect jobs? &
+      No employment effect: $\beta = 0$ &
+      $\beta \neq 0$ \\[0.7em]
+    Is inflation running at target? &
+      On target: $\mu = 2\%$ &
+      $\mu \neq 2\%$ \\[0.3em]
+    \bottomrule
+  \end{tabular}}
+
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% The argument every test in this section automates, stated once in words before
+% any machinery. Deliberately has no figure and no p-value: the tail picture
+% belongs to the p-value frame, and showing it here would answer step 3 before
+% the students have felt the question.
+% -----------------------------------------------------------------------------
+\begin{frame}{How Do We ``Reject'' a Null?}
+
+  \vspace{0.2em}
+  \begin{columns}[T]
+    \begin{column}{0.45\textwidth}
+      \begin{methodbox}
+        \textbf{STEPS}: \\[0.5EM]
+        \textbf{1.} Assume \textbf{ $H_0$} is true. \\[0.5em]
+        \textbf{2.} Draw the distribution of $\bar{X}$ under $H_0$. \\[0.5em]
+        \textbf{3.} Place realization of $\bar{X}$ on this distribution. Ask: is this unlikely? \\[0.5em]
+        \textbf{4.} Quantify ``unlikely.'' \\[0.5em] 
+        \textbf{5.} If the answer is too ``unlikely'', \textbf{reject} $H_0$.
+      \end{methodbox}
+    \end{column}
+    \pause
+    \begin{column}{0.54\textwidth}
+      % Generic units (standard errors from mu_0), no observed value marked:
+      % this frame is the argument, not a test. Figure: part3_figures.R, 15b.
+      \vspace{-0.3em}
+      \includegraphics[width=\textwidth]{p3_rejection_region.pdf}
+      \pause
+
+      \vspace{0.4em}
+      \begin{insightbox}
+        Let's take an example to fix ideas.
+      \end{insightbox}
+      % \vspace{0.5em}
+      % \begin{quotebox}
+      %   Either $H_0$ is false, or something rare just happened. Rejecting means
+      %   choosing the first explanation --- it is never a \emph{proof}.
+      % \end{quotebox}
+      % \pause
+
+      % \vspace{0.5em}
+      % \begin{questionbox}
+      %   And if the data are \textbf{not} surprising? We \textbf{fail to
+      %   reject} --- which is not the same as accepting $H_0$.
+      % \end{questionbox}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% The concrete question the whole section works on. Figure is p3_qotd_buffett
+% (scripts/R/part3_figures.R, section 1), already built for the commented-out
+% opening frame: growth of $1 on a LOG axis, because a linear axis buries the
+% first thirty years on the floor and hides the steady year-after-year gap.
+% -----------------------------------------------------------------------------
+\begin{frame}{Was Buffett Lucky or Skilled?}
+
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \vspace{0.3em}
+      \includegraphics[width=\textwidth]{p3_qotd_buffett.pdf}
+      \vspace{0.3em}
+  {\tiny\textcolor{lightgray}{Monthly returns, November 1976 -- December 2023.}}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \vspace{1.0em}
+      A dollar put into Berkshire in 1976 came back as
+      \textcolor{orange}{\textbf{\$8{,}017}}. The same dollar in the market
+      came back as \textcolor{blue}{\textbf{\$184}}.
+      \pause
+
+      \vspace{0.7em}
+      \begin{questionbox}
+        Is that consistent \textbf{skill} or a few \textbf{lucky} calls?
+      \end{questionbox}
+  
+    \end{column}
+  \end{columns}
+
+
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% Buffett worked through the four steps of "How Do We Reject a Null?", one frame
+% per stage, same numbering, same words. Sign convention: X = Berkshire MINUS
+% market, so a positive mean means skill; the other way round flips the sign of
+% every Buffett statistic in this section.
+% -----------------------------------------------------------------------------
+\begin{frame}{Step 1: Assume the Null}
+
+  \begin{columns}[T]
+    \begin{column}{0.45\textwidth}
+      \vspace{0.3em}
+      Write Berkshire's return as the market's return plus a wedge:
+      \[
+        r^{B}_t = r^{M}_t + X_t
+        \qquad\Longrightarrow\qquad
+        X_t = r^{B}_t - r^{M}_t .
+      \]
+
+      \vspace{0.2em}
+      $X_t$ is the \textbf{outperformance} in month $t$, and $\mu = \E[X]$ is
+      the parameter we are after.
+      \pause
+
+      \vspace{0.5em}
+      \begin{methodbox}
+        The estimator:
+        \vspace{-0.3em}
+        \[
+          \bar{X} = \frac{1}{n}\sum_{t=1}^{n}
+                     \left(r^{B}_t - r^{M}_t\right)
+        \]
+      \end{methodbox}
+    \end{column}
+    \pause
+    \begin{column}{0.54\textwidth}
+      \vspace{0.3em}
+      \begin{methodbox}
+        \[
+          H_0: \mu = \E[X] = 0
+        \]
+        \vspace{-1.2em}
+        \[
+          H_1: \mu \neq 0 .
+        \]
+      \end{methodbox}
+      \pause
+
+      \vspace{0.6em}
+      $H_0$ is the \textbf{luck} hypothesis: Berkshire's true edge is zero, the
+      good months and the bad ones cancel, and forty-seven years of
+      outperformance is what a fair coin looks like when you flip it $563$
+      times.
+      
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+
+% -----------------------------------------------------------------------------
+% Step 2: under H_0 the sampling distribution is fully pinned down. Centre comes
+% from H_0 itself, spread from the data, shape from the CLT -- and naming those
+% three sources separately is the point of the frame.
+% -----------------------------------------------------------------------------
+\begin{frame}{Step 2: The Distribution Under $H_0$}
+
+  \begin{columns}[T]
+    \begin{column}{0.45\textwidth}
+      \vspace{0.3em}
+      If $H_0$ is true, we know \textbf{everything} about how $\bar{X}$ behaves:
+
+      \vspace{0.5em}
+      \begin{methodbox}
+        \textbf{Centre:} $\E[\bar{X}] = \mu_0 = 0$ \hfill {\scriptsize from
+        $H_0$} \\[0.4em]
+        \textbf{Spread:} $sd(\bar{X}) = \sigma/\sqrt{n} = 0.252\%$
+        \hfill {\scriptsize assumed} \\[0.4em]
+        \textbf{Shape:} normal \hfill {\scriptsize from the CLT, $n = 563$}
+      \end{methodbox}
+      \pause
+
+    \end{column}
+    \begin{column}{0.54\textwidth}
+      % Buffett's own units, and deliberately WITHOUT his 0.79% on it: the claim
+      % here is only "this is how Xbar behaves if H_0 holds". Figure 14b.
+      \vspace{0.2em}
+      \includegraphics[width=\textwidth]{p3_buffett_null.pdf}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% Step 3: step 2's frame kept whole, with the sample laid on top of it -- in the
+% text and on the curve. Leaving the null box and the N(0, 0.252^2) line in
+% place is the point: 0.790% is meaningless until it is held against them. The
+% n and the se are already named in the methodbox, so the old "In the sample"
+% table would only have repeated them. Ends on the question the next three
+% frames (t statistic, t vs normal, p-value) exist to answer.
+% -----------------------------------------------------------------------------
+\begin{frame}{Step 3: Placing $\bar{X}$}
+
+  \begin{columns}[T]
+    \begin{column}{0.45\textwidth}
+      % The intro line from step 2 is dropped and the methodbox gaps tightened:
+      % four boxes in one column is the whole vertical budget, and the sentence
+      % was said one frame ago.
+      \vspace{0.3em}
+      If $H_0$ is true, we know \textbf{everything} about how $\bar{X}$ behaves:
+
+      \begin{methodbox}
+        \textbf{Centre:} $\E[\bar{X}] = \mu_0 = 0$ \hfill {\scriptsize from
+        $H_0$} \\[0.25em]
+        \textbf{Spread:} $\sd(\bar{X}) = \sigma/\sqrt{n} = 0.252\%$
+        \hfill {\scriptsize assumed} \\[0.25em]
+        \textbf{Shape:} normal \hfill {\scriptsize from the CLT, $n = 563$}
+      \end{methodbox}
+
+      \vspace{0.3em}
+      \begin{methodbox}
+        Berkshire delivered $\bar{X} = 0.790\%$ per month.
+      \end{methodbox}
+
+    \end{column}
+
+    \begin{column}{0.54\textwidth}
+      % Step 2's curve, then the same curve with the observed mean dropped onto
+      % it. \only, not \onslide: \onslide keeps the hidden box's space
+      % reserved, so the two images stack vertically instead of swapping. The
+      % two PDFs are saved at identical dimensions, so \only puts the second
+      % exactly where the first was.
+      \vspace{0.2em}
+      \only<1>{\includegraphics[width=\textwidth]{p3_buffett_null.pdf}}%
+      \only<2->{\includegraphics[width=\textwidth]{p3_buffett_point.pdf}}%
+      \vspace{0.3em}
+      \only<3->{\begin{questionbox}
+        Is $\bar{X} = 0.790\%$ unlikely?
+      \end{questionbox}}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% The CLT, reused as a measuring device. It is stated with sigma/sqrt(n) --
+% the population spread -- because that is the version the theorem actually
+% gives; swapping in s is what turns Z into t, and is the whole subject of the
+% next frame. Figure 14c: step 2's curve with Berkshire's 563 months on it.
+% -----------------------------------------------------------------------------
+
+% -----------------------------------------------------------------------------
+% The map for step 4: three ways to put a number on the same distance, named
+% before any of them is built. The first two are the frames that follow; the
+% third lives in the appendix and is reached by the button, so the main run
+% stays on the test-statistic / p-value path.
+% -----------------------------------------------------------------------------
+\begin{frame}[label=quantify-unlikely]{Step 4: Quantify ``Unlikely''}
+
+  \vspace{0.6em}
+  Three ways to put a number on how unlikely $\bar{X}$ is given $H_0$:
+
+  \vspace{0.9em}
+  \begin{enumerate}
+    \item \textbf{Test statistic} 
+      \vspace{0.5em}
+    \item \textbf{$p$-value} 
+      \vspace{0.5em}
+    \item \textbf{Confidence interval} 
+      \quad \hyperlink{ci-intervals}{\beamerbutton{Appendix slides}}
+  \end{enumerate}
+
+\end{frame}
+
+
+% -----------------------------------------------------------------------------
+% Introduces the test statistic and settles Z vs t in one frame. The CLT is
+% stated with the population sigma because that is the version the theorem
+% gives; swapping in s is exactly what turns Z into t, and the cutoff table is
+% there to show that the fix matters at n = 10 and is invisible at n = 563.
+% Figure: part3_figures.R, section 12.
+% -----------------------------------------------------------------------------
+\begin{frame}{Step 4: Quantify ``unlikely'' using test statistics}
+
+  \begin{columns}
+    \begin{column}{0.45\textwidth}
+      % 0.1/0.2em, not 0.2/0.5em: at 0.45 width the left column runs 4.4pt past
+      % the bottom of the frame, and these two gaps are where the slack is.
+      \vspace{0.1em}
+      One way to quantify ``unlikely'' is to measure the distance from the null. 
+      \vspace{0.2em}
+      \begin{definitionbox}[Test statistic]
+        One number saying how far the estimate sits from the null, measured in \textbf{its own} standard errors.
+      \end{definitionbox}
+
+      % Explicit \onslide switches, not \pause: nested overlay specs INTERSECT
+      % in beamer, so the \only<2-> on the figure sitting inside the ambient
+      % <4-> that three \pause commands leave behind resolved to <4->. Setting
+      % each element absolutely is what puts the figure on overlay 2, next to
+      % the Z it draws.
+      \vspace{0.25em}
+      \onslide<1->{
+      The CLT hands us the first version --- but it needs the population $\sigma$, which we have to assume:
+      \[
+        Z = \frac{\bar{X} - \mu_0}{\sigma/\sqrt{n}}
+        \;\sim\; \Normal(0,1).
+      \]}
+
+
+  
+      \vspace{0.2em}
+    %   \onslide<3->
+    %   Swap in the sample's standard deviation $s$, and the distribution changes with it:
+    %   \[
+    %     t = \frac{\bar{X} - \mu_0}{s/\sqrt{n}}
+    %     \;\sim\; t_{n-1}.
+    %   \]
+      \end{column}
+    \begin{column}{0.54\textwidth}
+      % The standardised twin of the step-3 figure: same curve, same 563
+      % months, x axis divided through by the standard error. Built in
+      % part3_figures.R section 14e to line up with p3_buffett_point.
+      %
+      % \onslide<1-> first: an \onslide switch runs to the end of the frame,
+      % not the end of the column, so the left column's <3-> leaks in here and
+      % intersects with the \only below. Resetting it is what lets the figure
+      % land on overlay 2 rather than 3.
+      \vspace{0.2em}
+      \onslide<1->
+      \only<2->{\includegraphics[width=\textwidth]{p3_buffett_z.pdf}
+      
+      \begin{methodbox}
+        \[
+          z = \frac{0.790 - 0}{0.252} = \mathbf{3.14}
+        \]
+      \end{methodbox}
+      }%
+
+      % \vspace{0.2em}
+      % {\small
+      % \begin{tabular}{@{} l r @{}}
+      %   \toprule
+      %   \textbf{Distribution} & \textbf{Cutoff for $5\%$} \\
+      %   \midrule
+      %   Normal & $1.96$ \\
+      %   $t$, $n = 11$ & $2.23$ \\
+      %   $t$, $n = 31$ & $2.04$ \\
+      %   $t$, $n = 563$ & $1.96$ \\
+      %   \bottomrule
+      % \end{tabular}}
+      % \pause
+
+      % \vspace{0.4em}
+      % \begin{insightbox}
+      %   $s$ is itself estimated, so $t$ carries \textbf{fatter tails} --- real
+      %   insurance in small samples, invisible by $n = 563$.
+      % \end{insightbox}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% Flow-chart styles, defined once and used by both rejection-rule frames (this
+% one shows the test-statistic branch alone; the one after the p-value frame
+% shows both). Kept here rather than in the preamble so the two frames cannot
+% drift apart, and so nothing else in the deck inherits them.
+% -----------------------------------------------------------------------------
+\tikzset{
+  measure/.style  = {draw=blue, fill=skyblue!15, rounded corners=2pt,
+                     line width=0.6pt, align=center, text width=2.3cm,
+                     inner sep=7pt},
+  decision/.style = {draw=blue!45, fill=softbg, rounded corners=2pt,
+                     line width=0.6pt, align=left, text width=7.0cm,
+                     inner sep=7pt},
+  head/.style     = {font=\bfseries, text=blue},
+  flow/.style     = {-{Stealth[length=5pt]}, draw=vermillion, line width=1.0pt}
+}
+
+% -----------------------------------------------------------------------------
+% The rejection rule for the test statistic, introduced the moment the statistic
+% itself exists. Only the t branch here; the p-value branch joins it two frames
+% later, once there is a p to act on.
+%
+% The frame exists to make c a CHOICE rather than a constant handed down. The
+% question is posed, then answered sideways: September 1931 is 5.65 sd out, so
+% "how many sd is a lot" has no answer from the arithmetic alone. Numbers from
+% part3_figures.R (search "Great Depression anchor"), computed on the 1926-2023
+% monthly US market series.
+% -----------------------------------------------------------------------------
+\begin{frame}{Step 5: Rejection rule}
+
+  \vspace{0.2em}
+  \begin{center}
+  \begin{tikzpicture}[font=\small]
+    \node[decision] (r1) {%
+      \textbf{(i)} Pick a critical value $c$. \\[3pt]
+      \textbf{(ii)} Reject $H_0$ if \\[2pt]
+      \hspace*{1.2em} $t > c$ \quad or \quad $t < -c$  \quad or \quad  $|t| > c$};
+    \node[measure, left=1.5cm of r1] (ts) {Test\\statistic $t$};
+    \node[head, above=0.4cm of r1] (h2) {Rejection rule};
+    \node[head] (h1) at (ts |- h2) {Pick the measure};
+    \draw[flow] (ts) -- (r1);
+  \end{tikzpicture}
+  \end{center}
+
+
+   \begin{columns}[T]
+    \begin{column}{0.45\textwidth}
+      \vspace{0.2em}
+    \begin{questionbox}
+        How to pick $c$?
+      \end{questionbox}
+      \pause 
+      %   \begin{questionbox}
+      %   How to choose one-sided vs. two-sided?
+      % \end{questionbox}
+      % \pause 
+    \end{column}
+    \begin{column}{0.54\textwidth}
+     \vspace{0.4em}
+      \begin{insightbox}
+        \textbf{Option 1}: Refer to some external threshold. \\ 
+        ex: c = 1.96 \\ 
+        ex: c = 5.7 = Stock market return in \textbf{Sep. 1931}, standardized
+      \end{insightbox}
+      \pause 
+      \begin{insightbox}
+        \textbf{Option 2}: Attach a notion of probability. See p-value below. 
+      \end{insightbox}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+
+\begin{frame}{Step 4: Quantify ``Unlikely'' using the $p$-value}
+
+  \begin{columns}[T]
+    \begin{column}{0.45\textwidth}
+      \vspace{0.2em}
+      \begin{definitionbox}[$p$-value]
+        The probability of getting a test statistic \textbf{at least as extreme} as
+        the one observed, \emph{assuming $H_0$ true}.
+      \end{definitionbox}
+      \pause
+
+      \vspace{0.6em}
+      Set the critical value to be the test statistic ($c = 3.14$ in our example) and compute the CDF:
+
+      \begin{align*}
+        \text{p-value} &= P(T > c) \\
+        \text{OR} \quad \text{p-value} &= P(T < c) \\
+        \text{OR} \quad \text{p-value} &= P(|T| > |c|) 
+      \end{align*}
+    \end{column}
+    \begin{column}{0.54\textwidth}
+      \vspace{1.0em}
+      \includegraphics[width=\textwidth]{p3_pvalue_tail.pdf}
+      \pause
+
+      \vspace{0.3em}
+      \begin{insightbox}
+        Usually \textbf{two-tailed}, because $H_1$ was $\mu \neq 0$. \\
+        Interpretation: a result so extreme in either direction is rare.
+      \end{insightbox}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.2em}
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% The p-value branch of the rejection rule, the twin of the t branch shown after
+% the test-statistic frame. Same chart, same two steps, so the two frames read as
+% one rule applied to whichever measure is in hand.
+%
+% Then alpha is actually chosen, and the intuition is deliberately given as a
+% FREQUENCY rather than as a probability statement about H_0: "less than 1 time
+% in 20" is what 0.05 licenses, and "about 5 of 100 true nulls rejected anyway"
+% is what it costs. The second half sets up the multiple-testing frame later in
+% the deck, where exactly that 5-in-100 is put on screen.
+% Berkshire's own verdict is the frame that follows.
+% -----------------------------------------------------------------------------
+\begin{frame}{Step 5: Rejection rule with p-value}
+
+  \vspace{0.2em}
+  \begin{center}
+  % Styles come from the \tikzset above the first rejection-rule frame.
+  \begin{tikzpicture}[font=\small]
+    \node[decision] (r2) {%
+      \textbf{(i)} Pick a significance level $\alpha$. \\[3pt]
+      \textbf{(ii)} Reject $H_0$ if  $p\text{-value} < \alpha$};
+    \node[measure, left=1.5cm of r2] (pv) {$p$-value};
+    \node[head, above=0.4cm of r2] (h2) {Rejection rule};
+    \node[head] (h1) at (pv |- h2) {Pick the measure};
+    \draw[flow] (pv) -- (r2);
+  \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.4em}
+  \begin{columns}[T]
+    \begin{column}{0.45\textwidth}
+      \vspace{0.2em}
+      \begin{methodbox}
+        Standard value is $\alpha = \mathbf{0.05}$. \\[0.3em]
+        Reject $H_0$ when $p < 0.05$. 
+      \end{methodbox}
+    \end{column}
+    \pause 
+    \begin{column}{0.54\textwidth}
+      \vspace{0.2em}
+      \begin{insightbox}
+        Why $0.05$? It says: an observation this large occurs only \textbf{1 time in 20 times} when $H_0$ is true. \\[0.3em]
+        More importantly, it's a convention.
+      \end{insightbox}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% Steps 4 and 5 applied to Berkshire: two currencies for the same distance --
+% t in standard errors, p as a probability. Deliberately NOT titled "Step 4":
+% the general machinery (both branches of 4 and 5) is already done above, so a
+% third "Step 4" here would land after two "Step 5"s.
+% The verdict is withheld to the frame after next on purpose: this one only
+% puts a number on the surprise, and Check Your Understanding then makes sure
+% that number is read correctly before it is acted on.
+% Figure: part3_figures.R, section 14d, which shades outwards from +/- 0.790%
+% (the p-value) rather than from the critical value.
+% -----------------------------------------------------------------------------
+
+% -----------------------------------------------------------------------------
+% The verdict, split off when step 5 became the rule itself. Content is
+% unchanged from the old combined frame: both rules applied to Berkshire, the
+% picture, and the caution about how thin a 3.1-sigma edge really is.
+% -----------------------------------------------------------------------------
+\begin{frame}{Buffett: The Verdict}
+
+  % Explicit \onslide switches rather than \pause: the figure has to be up from
+  % overlay 1, and any \pause in the left column would leave an ambient spec
+  % covering the right column too. Note the \onslide<1-> reset at the top of the
+  % right column -- a switch runs to the end of the FRAME, not the column, so
+  % without it the left column's <3-> would hold the figure back as well.
+  \begin{columns}[T]
+    \begin{column}{0.45\textwidth}
+      \onslide<1->
+      \begin{methodbox}
+        \textbf{Route 1 --- critical value} \\[0.2em]
+        $|z| = 3.14 \;>\; 1.96 = c$. \hfill Reject $H_0$.
+      \end{methodbox}
+
+      \vspace{0.4em}
+      \onslide<2->
+      \begin{methodbox}
+        \textbf{Route 2 --- $p$-value} \\[0.2em]
+        $p = 0.0018 \;<\; 0.05 = \alpha$. \hfill Reject $H_0$.
+      \end{methodbox}
+
+      \vspace{0.4em}
+      % The equivalence stated as one region read two ways, which is what the
+      % figure shows -- not as two rules that happen to agree.
+      \onslide<3->
+      \begin{insightbox}
+        The region corresponds to $|Z| > 1.96$. \\
+        Its area is $0.05$. \\
+        $|Z| > c \;\iff\; p < \alpha$.
+      \end{insightbox}
+    \end{column}
+    \begin{column}{0.54\textwidth}
+      % One picture carrying both routes: the cutoff as a boundary (grey dashed)
+      % and the same cutoff as an area (shaded). Berkshire is outside both.
+      \onslide<1->
+      \vspace{0.3em}
+      \includegraphics[width=\textwidth]{p3_buffett_equiv.pdf}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% What the test could not tell us. The verdict frame rejects "luck" and stops
+% there, which is exactly where the paper starts: the alpha survives the
+% traditional factors and dies against BAB and QMJ. The two highlighted
+% sentences are the ones the deck's argument turns on -- the edge is a reward
+% for a strategy, and it lives in the stock picking.
+% Highlighting via \hlight (soul) rather than \colorbox: these phrases wrap.
+% -----------------------------------------------------------------------------
+\begin{frame}{Buffett's Alpha}
+
+  \vspace{0.4em}
+  \begin{quotebox}
+    Warren Buffett's Berkshire Hathaway has realized a Sharpe ratio of
+    $0.79$ with \hlight{significant alpha to traditional risk factors}. [...] \\
+
+    Therefore, \hlight{Buffett's returns appear to be neither luck nor magic
+    but, rather, a reward for leveraging cheap, safe, high-quality stocks.}  \\
+
+    Decomposing Berkshire's portfolio into publicly traded stocks and wholly owned private companies, we found that the public stocks have performed the best, which suggests that \hlight{Buffett's returns are more the result of stock selection than of his effect on management.}
+  \end{quotebox}
+
+  \vspace{0.5em}
+  \hfill{\small \citeay{Frazzini2018_buffett}, \emph{Financial Analysts
+  Journal} \textbf{74}(4).}
+
+\end{frame}
+
+% \begin{frame}{Two Ways to Be Wrong}
+
+%   \begin{columns}[T]
+%     \begin{column}{0.44\textwidth}
+%       \vspace{0.3em}
+%       \centering
+%       \renewcommand{\arraystretch}{1.5}
+%       {\small
+%       \begin{tabular}{@{} l c c @{}}
+%         \toprule
+%          & \multicolumn{2}{c}{\textbf{Truth}} \\
+%         \cmidrule(l){2-3}
+%         \textbf{Decision} & $H_0$ true & $H_0$ false \\
+%         \midrule
+%         Reject $H_0$
+%           & \textcolor{vermillion}{\textbf{Type I}}
+%           & \pmark \\
+%         Do not reject
+%           & \pmark
+%           & \textcolor{purple}{\textbf{Type II}} \\
+%         \bottomrule
+%       \end{tabular}}
+%       \pause
+
+%       \vspace{0.9em}
+%       \raggedright
+%       {\small
+%       \textcolor{vermillion}{\textbf{Type I}}: back a strategy that has no edge.
+%       Probability $= \alpha$, and you choose it.
+
+%       \vspace{0.4em}
+%       \textcolor{purple}{\textbf{Type II}}: pass on a manager who genuinely has
+%       one. Probability $= \beta$, and you mostly do not know it.}
+%     \end{column}
+%     \begin{column}{0.52\textwidth}
+%       \vspace{0.8em}
+%       \pause
+%       \includegraphics[width=\textwidth]{p3_error_tradeoff.pdf}
+%       \pause
+
+%       \vspace{0.3em}
+%       \begin{insightbox}
+%         Move the cutoff right and the \textcolor{vermillion}{orange} area
+%         shrinks while the \textcolor{purple}{purple} one grows. You cannot shrink
+%         both --- \textbf{only more data moves the two curves apart}.
+%       \end{insightbox}
+%     \end{column}
+%   \end{columns}
+
+%   \vspace{0.2em}
+
+% \end{frame}
+
+
+% \begin{frame}{The Problem With Testing Many Things}
+
+%   \begin{columns}[T]
+%     \begin{column}{0.40\textwidth}
+%       \vspace{0.3em}
+%       $\alpha = 0.05$ means: \textbf{one in twenty} true nulls gets rejected
+%       anyway. That is not a bug --- it is the price of the tolerance we chose.
+%       \pause
+
+%       \vspace{0.6em}
+%       Here are 100 ``strategies'' that are pure noise by construction. Not one of
+%       them has an edge.
+%       \pause
+
+%       \vspace{0.6em}
+%       \begin{answerbox}
+%         \textbf{Five} clear the bar. Test them one at a time and you would
+%         publish five discoveries.
+%       \end{answerbox}
+%     \end{column}
+%     \begin{column}{0.56\textwidth}
+%       \vspace{1.2em}
+%       \includegraphics[width=\textwidth]{p3_multiple_testing.pdf}
+
+%       \vspace{0.1em}
+%       {\tiny\textcolor{lightgray}{Each strategy: 240 months of returns drawn from
+%       a distribution with mean exactly zero.}}
+%       \pause
+
+%       \vspace{0.3em}
+%       \begin{insightbox}
+%         Now imagine those 100 are backtests you ran and only the winners were
+%         shown to you. The $t$ statistic of a \textbf{selected} strategy no longer
+%         means what the formula says.
+%       \end{insightbox}
+%     \end{column}
+%   \end{columns}
+
+%   \vspace{0.2em}
+%   {\tiny\textcolor{lightgray}{This is the multiple testing problem.
+%   \citeay{Harvey2016_crosssection} argue it has contaminated the published
+%   factor literature, and propose raising the bar to roughly $t > 3$.}}
+
+% \end{frame}
+
+% =============================================================================
+% \section{Recap}
+% =============================================================================
+
+\begin{frame}{Key Takeaways}
+
+  % Rows track the frames that are actually live. The Type I/II row went when
+  % "Two Ways to Be Wrong" was commented out, and multiple testing with it --
+  % put both back here if those frames return. Confidence intervals are flagged
+  % as appendix material so the row does not promise a frame the main run skips.
+  % The three definitions are worded to match the frames that give them
+  % ("Parameter $\neq$ Statistic" and "The Two Fundamental Types of Inference").
+  % No leading \vspace: ten rows is 1.2pt over the frame without it.
+  \begin{tabular}{@{} l p{9.4cm} @{}}
+    \textbf{Parameters vs. statistics} & Parameters ($\mu$, $\sigma^2$) are fixed
+      and invisible; statistics ($\bar{X}$, $s^2$) are visible and random.
+      \\[0.4em]
+    \textbf{Inference} & Using a \textbf{sample statistic} to say something
+      about an unknown \textbf{population parameter}. \\[0.4em]
+    \textbf{Estimation} & Put a number on the parameter and say how good it is
+      --- a \textbf{positive} claim about what it \emph{is}. \\[0.4em]
+    \textbf{Estimators} & A rule, not a number. Judge it by its sampling
+      distribution: unbiased, efficient, consistent. \\[0.4em]
+    \textbf{Standard error} & The dispersion of an estimator. \\[0.4em]
+    \textbf{Hypothesis testing} & Rule a claim \textbf{out} --- a
+      \textbf{negative} claim about what the parameter is \emph{not}. It never
+      confirms. \\[0.4em]
+    \textbf{The CLT} & For large $n$, $\bar{X}$ is approximately normal
+      \emph{whatever} the population. \\[0.4em]
+    \textbf{Test statistic} & Number saying how far the estimate is from the null \\[0.4em]
+    \textbf{p-value} & Probability of getting a test statistic at least as extreme as the one observed, if $H_0$ true. \\[0.4em]
+  \end{tabular}
+
+\end{frame}
+
+% \begin{frame}{Where This Is All Heading}
+
+%   \begin{columns}[T]
+%     \begin{column}{0.50\textwidth}
+%       \vspace{0.3em}
+%       Part 2 ended on the object MGMT 924 is built from:
+%       \[
+%         \E[Y \mid X], \qquad
+%         \text{slope} = \frac{\cov(X, Y)}{\var(X)}.
+%       \]
+%       \pause
+
+%       \vspace{0.5em}
+%       That slope is a \textbf{population parameter}. Regression hands you
+%       $\hat{\beta}$ --- an \textbf{estimator} of it, built from sample
+%       covariances.
+%       \pause
+
+%       \vspace{0.6em}
+%       \begin{insightbox}
+%         Which means every single thing from this hour applies to it, unchanged.
+%       \end{insightbox}
+%     \end{column}
+%     \begin{column}{0.46\textwidth}
+%       \vspace{0.8em}
+%       \pause
+%       \centering
+%       \renewcommand{\arraystretch}{1.35}
+%       {\small
+%       \begin{tabular}{@{} l l @{}}
+%         \toprule
+%         \textbf{This hour} & \textbf{In regression} \\
+%         \midrule
+%         $\bar{X}$ & $\hat{\beta}$ \\
+%         $\se(\bar{X})$ & $\se(\hat{\beta})$ \\
+%         $H_0: \mu = 0$ & $H_0: \beta = 0$ \\
+%         $t = \bar{X}/\se$ & $t = \hat{\beta}/\se$ \\
+%         CI for $\mu$ & CI for $\beta$ \\
+%         \bottomrule
+%       \end{tabular}}
+%       \pause
+
+%       \vspace{0.7em}
+%       \raggedright
+%       {\small\textcolor{DarkGray}{The regression output you will read in Classes
+%       4--6 is this table, one row per variable. You now know what every column
+%       means.}}
+%     \end{column}
+%   \end{columns}
+
+% \end{frame}
+
+\begin{frame}{Three Parts, One Argument}
+
+  \vspace{0.6em}
+  \begin{columns}[T]
+    \begin{column}{0.31\textwidth}
+      \begin{methodbox}
+        \textbf{Part 1} \\[0.3em]
+        {\small An uncertain outcome is a \textbf{random variable}, it gives rise to  a distribution.}
+      \end{methodbox}
+    \end{column}
+    \begin{column}{0.31\textwidth}
+      \begin{methodbox}
+        \textbf{Part 2} \\[0.3em]
+        {\small A distribution is summarised by its \textbf{moments}. }
+      \end{methodbox}
+    \end{column}
+    \begin{column}{0.31\textwidth}
+      \begin{methodbox}
+        \textbf{Part 3} \\[0.3em]
+        {\small We never observe those moments. We \textbf{estimate} them, or we \textbf{reject} what they are not.}
+      \end{methodbox}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+\begin{frame}{References}
+  \footnotesize
+  \nocite{Harvey2016_crosssection}
+  \nocite{Frazzini2018_buffett}
+  \bibliography{../latex_files/references}
+\end{frame}
+
+
+% =============================================================================
+% Appendix: what makes an estimator good, then the three properties in detail.
+% The overview frame moved here out of the main body, so the whole detour --
+% overview, three properties, Back buttons -- now lives past \appendix and
+% nothing in the main deck links into it. Reach it by page order or by
+% navigating to it directly.
+% =============================================================================
+\appendix
+
+\begin{frame}[label=estimator-good]{What Makes an Estimator Good}
+
+  \vspace{0.3em}
+  Some estimators are better than others. Here are some important characteristics a good estimator has:
+
+  \vspace{0.8em}
+  \begin{columns}[T]
+    \begin{column}{0.31\textwidth}
+      \begin{methodbox}
+        \textbf{1. Unbiased} \\[0.3em]
+        {\small The estimator is centred on the population parameter.}
+      \end{methodbox}
+    \end{column}
+    \begin{column}{0.31\textwidth}
+      \begin{methodbox}
+        \textbf{2. Efficient} \\[0.3em]
+        {\small Among estimators that are unbiased, it has the smallest \emph{variance}.}
+      \end{methodbox}
+    \end{column}
+    \begin{column}{0.31\textwidth}
+      \begin{methodbox}
+        \textbf{3. Consistent} \\[0.3em]
+        {\small The estimator's sampling distribution collapses onto the population parameter as $n$ grows large.}
+      \end{methodbox}
+    \end{column}
+  \end{columns}
+
+  % The buttons sit in their own row rather than inside the columns above: the
+  % three methodboxes are different heights, so in-column buttons landed at
+  % three different vertical positions. Same widths, so each still lines up
+  % under its own box.
+  \vspace{0.8em}
+  \begin{columns}
+    \begin{column}{0.31\textwidth}
+      \centering\hyperlink{unbiasedness}{\beamerbutton{Unbiasedness}}
+    \end{column}
+    \begin{column}{0.31\textwidth}
+      \centering\hyperlink{efficiency}{\beamerbutton{Efficiency}}
+    \end{column}
+    \begin{column}{0.31\textwidth}
+      \centering\hyperlink{consistency}{\beamerbutton{Consistency}}
+    \end{column}
+  \end{columns}
+
+  % \vspace{1.0em}
+  % \begin{insightbox}
+  %   Properties 1 and 2 are about the expected value and variance of the estimator. \\
+    
+  %   Property 3 is about what happens as $n \to \infty$. 
+    
+  %   An estimator can have one without the other.
+  % \end{insightbox}
+
+  \vspace{0.2em}
+
+\end{frame}
+
+\begin{frame}[label=unbiasedness]{Unbiasedness}
+
+  \begin{columns}[T]
+    \begin{column}{0.42\textwidth}
+      \begin{definitionbox}[Unbiased]
+        $\hat{\theta}$ is unbiased for $\theta$ if
+        \[
+          \E\!\left[\hat{\theta}\right] = \theta
+          \quad\text{for every } \theta.
+        \]
+      \end{definitionbox}
+
+      \vspace{0.5em}
+      For the sample mean this is just E.3 from Part 2:
+      \[
+        \E\!\left[\bar{X}\right]
+          = \frac{1}{n}\sum_{i=1}^{n} \E[X_i]
+          = \frac{1}{n}\, n \mu = \mu.
+      \]
+
+      \vspace{0.4em}
+      {\small Bias is $\E[\hat{\theta}] - \theta$: the gap between where the
+      sampling distribution sits and where the truth is.}
+    \end{column}
+    \begin{column}{0.54\textwidth}
+      \vspace{1.0em}
+      \includegraphics[width=\textwidth]{p3_unbiased_vs_biased.pdf}
+
+    \end{column}
+  \end{columns}
+
+  \vspace{-0.4em}
+  \hfill\hyperlink{estimator-good}{\beamerbutton{Back}}
+
+\end{frame}
+
+\begin{frame}[label=efficiency]{Efficiency}
+
+  \begin{columns}[T]
+    \begin{column}{0.42\textwidth}
+      \vspace{0.2em}
+      Unbiasedness alone is a low bar: the \emph{first observation} $X_1$ is an
+      unbiased estimator of $\mu$ too, and it is obviously terrible.
+
+      \vspace{0.4em}
+      \begin{definitionbox}[Efficiency]
+        Among unbiased estimators, prefer the one with the \textbf{smallest
+        variance}.
+      \end{definitionbox}
+      
+      \vspace{1em}
+        \textbf{Example}: The sample median as an estimator for the expected value. \\
+        \begin{itemize}
+          \item  The sample median is unbiased because the population is  symmetric. 
+          \item But the median's sampling distribution is \textbf{wider} than the mean's.
+        \end{itemize}
+
+    
+    \end{column}
+    \begin{column}{0.54\textwidth}
+      \vspace{0.6em}
+      \centering
+      \includegraphics[width=0.94\textwidth]{p3_efficiency.pdf}
+
+    \end{column}
+  \end{columns}
+
+  \vspace{-0.4em}
+  \hfill\hyperlink{estimator-good}{\beamerbutton{Back}}
+
+\end{frame}
+
+\begin{frame}[label=consistency]{Consistency}
+
+  \begin{columns}[T]
+    \begin{column}{0.42\textwidth}
+      \begin{definitionbox}[Consistency]
+        $\hat{\theta}$ is consistent if it converges to $\theta$ as the sample
+        grows:
+        \[
+          \hat{\theta} \convp \theta
+          \qquad\text{as } n \to \infty.
+        \]
+      \end{definitionbox}
+      \pause
+
+      \vspace{0.6em}
+      You have already seen this. Part 2's coin flips were the sample mean
+      closing in on $\E[X] = 0.5$: the \textbf{Law of Large Numbers} is exactly
+      the statement that $\bar{X}$ is consistent for $\mu$.
+      \pause
+
+      \vspace{0.6em}
+      {\small Here it is again, from the other side: not one path over time, but
+      the whole distribution tightening.}
+    \end{column}
+    \begin{column}{0.54\textwidth}
+      \vspace{1.2em}
+      \includegraphics[width=\textwidth]{p3_consistency.pdf}
+
+      \vspace{0.2em}
+      {\tiny\textcolor{lightgray}{One year, five years, twenty years, eighty
+      years of monthly data.}}
+      \pause
+
+      \vspace{0.3em}
+      \begin{insightbox}
+        The curve does not shift --- it \textbf{narrows}. Consistency is a
+        statement about spread, not about location.
+      \end{insightbox}
+    \end{column}
+  \end{columns}
+
+  \vspace{-0.4em}
+  \hfill\hyperlink{estimator-good}{\beamerbutton{Back}}
+
+\end{frame}
+
+% =============================================================================
+% Confidence intervals, moved past \appendix so they no longer sit in the main
+% run. Reached from the Step 4 overview by button; the last frame hands control
+% back the same way.
+% =============================================================================
+% =============================================================================
+% \section{Confidence Intervals}
+% =============================================================================
+
+% -----------------------------------------------------------------------------
+% The inversion, stated as an inversion: the test builds the distribution around
+% mu_0 and asks where Xbar fell; the interval builds the object around Xbar and
+% asks whether mu_0 is in it. Same arithmetic, opposite starting point.
+%
+% Note the wording on the last box. "How likely is it that this interval
+% contains mu_0" has no answer for THIS interval -- mu is fixed, so it is in or
+% out. The 95% is the long-run coverage of the recipe, which is why the question
+% on this frame is a yes/no and the probability statement is quarantined in the
+% insightbox. The frame after this one shows the repeated sampling that earns it.
+% -----------------------------------------------------------------------------
+
+\begin{frame}[label=ci-intervals]{Step 4: Quantify ``unlikely'' using confidence intervals}
+
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \vspace{0.2em}
+      \begin{methodbox}
+        \textbf{The test statistic} approach fixes $\mu_0$, draws the distribution around it, and asks how unlikely our $\bar{X}$ was.
+      \end{methodbox}
+      \pause
+
+      \vspace{0.4em}
+      \begin{methodbox}
+        \textbf{The confidence interval} approach turns this around: build an object around
+        \textbf{the estimator}, then ask whether $\mu_0$ falls inside it.
+      \end{methodbox}
+      \pause
+
+      \vspace{0.4em}
+      \begin{definitionbox}[$(1-\alpha)$ confidence interval]
+        \[
+          \bar{X} \;\pm\; c \cdot \se\!\left(\bar{X}\right),
+        \]
+        with $c = 1.96$ for $95\%$. 
+      \end{definitionbox}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \vspace{0.2em}
+      \pause
+      \begin{questionbox}
+        What does this confidence interval measure?
+      \end{questionbox}
+      \pause
+
+      \vspace{0.5em}
+      \begin{answerbox}
+        Across repeated samples, 95\% of the intervals built this way contain $\mu$.
+      \end{answerbox}
+      
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+
+% -----------------------------------------------------------------------------
+% The third branch of the same chart, for the third measure. Styles come from
+% the \tikzset above the first rejection-rule frame in the body -- still in
+% scope here because TeX reads sequentially and the appendix comes after it.
+%
+% The insightbox is the payoff of running all three: the interval is not a
+% fourth idea, it is the set of nulls that survive the very same cut. Said here
+% so "Tests and Intervals Are the Same Statement" lands as a conclusion rather
+% than as news.
+% -----------------------------------------------------------------------------
+\begin{frame}{Step 5: Rejection rule with confidence interval}
+
+  \vspace{0.2em}
+  \begin{center}
+  % Styles come from the \tikzset above the first rejection-rule frame.
+  \begin{tikzpicture}[font=\small]
+    \node[decision] (r3) {%
+      \textbf{(i)} Pick a confidence level $1 - \alpha$. \\[3pt]
+      \textbf{(ii)} Reject $H_0$ if $\mu_0$ lies \textbf{outside}
+      $\bar{X} \pm c \cdot \se(\bar{X})$};
+    \node[measure, left=1.5cm of r3] (ci) {Confidence\\interval};
+    \node[head, above=0.4cm of r3] (h2) {Rejection rule};
+    \node[head] (h1) at (ci |- h2) {Pick the measure};
+    \draw[flow] (ci) -- (r3);
+  \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.4em}
+  \begin{columns}[T]
+    \begin{column}{0.45\textwidth}
+      \vspace{0.2em}
+      \begin{methodbox}
+        Standard value is $1 - \alpha = \mathbf{95\%}$
+      \end{methodbox}
+    \end{column}
+    \begin{column}{0.54\textwidth}
+      \vspace{0.2em}
+      \begin{insightbox}
+        The same cut a third time: $\mu_0$ outside the interval
+        $\iff |Z| > 1.96 \iff p < 0.05$. 
+      \end{insightbox}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+
+
+% -----------------------------------------------------------------------------
+% Moved out of the main run: the sqrt(n) slowdown is a refinement of "more data
+% buys precision", not a separate idea, and the main run is over time. Reached
+% by the button on "How to Make Estimation Better", which is where a student
+% who wants the catch will look for it.
+% -----------------------------------------------------------------------------
+\begin{frame}[label=diminishing-gains]{But there are diminishing gains...}
+
+  \begin{columns}
+    \begin{column}{0.42\textwidth}
+      \vspace{0.3em}
+      $\sigma / \sqrt{n}$ says the estimator's precision improves with data --- but \textbf{slowly}.
+      \pause
+
+      \vspace{0.6em}
+      \begin{methodbox}
+        To \textbf{halve} the standard error you need \textbf{four times} the
+        data.
+      \end{methodbox}
+      \pause
+    \end{column}
+    \begin{column}{0.54\textwidth}
+      \vspace{1.2em}
+      \includegraphics[width=\textwidth]{p3_se_root_n.pdf}
+
+      \vspace{0.2em}
+      {\tiny\textcolor{lightgray}{Standard error of the sample mean, with
+      $\sigma = 4.28\%$ per month.}}
+    \end{column}
+  \end{columns}
+    \vspace{0.3em}
+      \begin{insightbox}
+        Note that for time series, we cannot even extend the sample size. We currently have 100 years of data, or 1200 months. We cannot $\times 4$ our sample size!
+      \end{insightbox}
+
+  \hfill\hyperlink{estimation-better}{\beamerbutton{Back}}
+\end{frame}
+
+
+\end{document}

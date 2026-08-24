@@ -1,0 +1,118 @@
+\documentclass[9pt,english,aspectratio=169]{beamer}
+\input{../latex_files/header_slides}
+
+\bibliographystyle{../latex_files/aea}
+\title{Test Slide Deck}
+\author{Your Name}
+\date{\today}
+
+\begin{document}
+
+% =============================================================================
+% Title
+% =============================================================================
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% =============================================================================
+% Outline
+% =============================================================================
+\begin{frame}{Outline}
+  \tableofcontents
+\end{frame}
+
+% =============================================================================
+\section{Introduction}
+% =============================================================================
+
+\begin{frame}{Motivation}
+  Why does this topic matter?
+  \begin{itemize}
+    \item First point about the research question
+    \item Second point with a citation: \citeay{Angrist1996_iv}
+    \item Third point referencing recent work \citegray{Callaway2021_did}
+  \end{itemize}
+\end{frame}
+
+% =============================================================================
+\section{Theory}
+% =============================================================================
+
+\begin{frame}{Key Definitions}
+  \begin{definitionbox}[Causal Effect]
+    The causal effect of treatment $D$ on outcome $Y$ is:
+    \[
+      \tau = \E[Y(1) - Y(0)]
+    \]
+    where $Y(1)$ and $Y(0)$ are potential outcomes.
+  \end{definitionbox}
+\end{frame}
+
+\begin{frame}{Research Question}
+  \begin{questionbox}
+    Under what conditions can we identify $\tau$ from observational data?
+  \end{questionbox}
+
+  \vspace{1em}
+
+  \begin{answerbox}
+    With a valid instrument $Z$ satisfying relevance, independence, and the exclusion restriction \citegray{Angrist1996_iv}.
+  \end{answerbox}
+\end{frame}
+
+\begin{frame}{Identification Strategy}
+  \begin{methodbox}
+    \textbf{Two-Stage Least Squares (2SLS)}
+    \begin{enumerate}
+      \item First stage: regress $D$ on $Z$ and covariates $X$
+      \item Second stage: regress $Y$ on $\hat{D}$ and $X$
+    \end{enumerate}
+  \end{methodbox}
+
+  \vspace{1em}
+
+  \begin{insightbox}
+    The IV estimate is consistent under LATE assumptions, even when OLS is biased by endogeneity.
+  \end{insightbox}
+\end{frame}
+
+% =============================================================================
+\section{Results}
+% =============================================================================
+
+\begin{frame}{Main Results}
+  \begin{table}[htbp]
+    \centering
+    \begin{tabular}{lcc}
+      \toprule
+      & (1) OLS & (2) 2SLS \\
+      \midrule
+      Treatment & 0.15\sym{**} & 0.42\sym{***} \\
+                & (0.06) & (0.12) \\
+      \midrule
+      Controls & Yes & Yes \\
+      Observations & 10{,}000 & 10{,}000 \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
+
+  {\footnotesize Standard errors in parentheses. \sym{*} $p<0.10$, \sym{**} $p<0.05$, \sym{***} $p<0.01$.}
+\end{frame}
+
+\begin{frame}{Key Takeaway}
+  \begin{quotebox}
+    ``The IV estimate is nearly three times larger than OLS,
+    consistent with attenuation bias from measurement error.''
+  \end{quotebox}
+\end{frame}
+
+% =============================================================================
+\section*{References}
+% =============================================================================
+
+\begin{frame}[allowframebreaks]{References}
+  \bibliography{../latex_files/references}
+\end{frame}
+
+\end{document}

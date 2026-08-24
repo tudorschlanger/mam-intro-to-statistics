@@ -1,0 +1,1135 @@
+% =============================================================================
+% MAM Orientation BootCamp — Probability and Statistics Foundations
+% Part 2: Population Parameters and Distribution Moments  (50 min)
+% =============================================================================
+% Technical content: Wooldridge (2016), Appendix B-3, B-4, B-5
+% Figures:           scripts/R/part2_figures.R  ->  output/figures/p2_*.pdf
+% Compile:  cd drafts/slides
+%           TEXINPUTS=../latex_files: xelatex part2_moments.tex
+%           BIBINPUTS=../latex_files: bibtex part2_moments
+%           (then two more xelatex passes)
+% =============================================================================
+\documentclass[9pt,english,aspectratio=169]{beamer}
+\input{../latex_files/header_slides}
+
+\bibliographystyle{../latex_files/aea}
+
+\graphicspath{{../../output/figures/}}
+
+% ---------- Title ----------
+\title{\textbf{Population Parameters and Distribution Moments}}
+\subtitle{Probability and Statistics Foundations --- Part 2}
+\author{Instructor: Tudor Schlanger}
+\date{Master's in Asset Management \\ Yale School of Management}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% The series' recurring session-objectives slide, matching Part 1's verbatim --
+% same three objectives, same position before the outline.
+% -----------------------------------------------------------------------------
+\begin{frame}{Objectives for this session}
+  \large
+  \begin{enumerate}
+    \item Expose you to ideas and terminology \\[1em]
+    \item Teach you how we map the real world to math objects \\[1em]
+    \item Teach you how to interpret math objects using real world examples
+  \end{enumerate}
+
+\end{frame}
+
+
+\begin{frame}{Outline}
+
+  \vspace{0.8em}
+  \large
+  \begin{enumerate}
+    \item[\textbf{1.}] Random variables and distributions \\
+          {\small\textcolor{DarkGray}{How do we describe an uncertain outcome mathematically?}}
+          \vspace{0.5em}
+    \item[\textbf{2.}] \textbf{Population parameters and moments} \\
+          {\small\textcolor{DarkGray}{If we know the distribution, which summary numbers matter?}}
+          \vspace{0.5em}
+    \item[\textbf{3.}] Statistical inference \\
+          {\small\textcolor{DarkGray}{If we \emph{don't} know the distribution, how do we learn it from data?}}
+  \end{enumerate}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+
+% \begin{frame}{Random processes}
+
+%   \begin{columns}[T]
+%     \begin{column}{0.49\textwidth}
+%       \includegraphics[width=\textwidth]{p1_returns_a_revealed.pdf}
+%     \end{column}
+%     \begin{column}{0.49\textwidth}
+%       \includegraphics[width=\textwidth]{p1_dist_normal.pdf}
+
+%       \vspace{0.35em}
+%       \includegraphics[width=\textwidth]{p1_dist_kde.pdf}
+%     \end{column}
+%   \end{columns}
+
+% \end{frame}
+
+\begin{frame}{Question of the lesson}
+
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \vspace{2em}
+      Assume you have a portfolio comprised of two assets: \textcolor{blue}{stocks} and \textcolor{vermillion}{bonds}.
+
+      \vspace{0.5em}
+      They both have uncertain returns, $R_s$ and $R_b$, with known joint
+      distributions.
+
+      \vspace{0.5em}
+      Your allocation is already set: a fraction $\omega$ in stocks, the rest in
+      bonds.
+
+    \end{column}
+    \pause
+    \begin{column}{0.5\textwidth}
+        \begin{center}
+        \includegraphics[width=\textwidth]{p2_qotd_stocks_bonds.pdf}
+      \end{center}
+       % Shiller supplies the stock side only: his sole bond column, "Rate GS10", is
+      % a constant-maturity YIELD, not a return, so the Treasury RETURN series comes
+      % from the course data. His total-return column is real and is converted to
+      % nominal with the CPI column -- see scripts/R/part2_figures.R, section 12.
+      \vspace{-0.4em}
+      {\tiny\textcolor{lightgray}{Monthly returns, 1941--2023. S\&P Composite total
+      return from Shiller; 10-year Treasury returns from the course data.}}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.3em}
+    \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+    \begin{questionbox}
+      What is the \textbf{risk--return profile} of my portfolio?
+    \end{questionbox}
+    \end{column}
+    \pause
+    \begin{column}{0.5\textwidth}
+      \begin{insightbox}
+        We can't read that off the distributions! We need an objective.
+      \end{insightbox}
+    \end{column}
+  \end{columns}
+
+
+
+\end{frame}
+
+\begin{frame}{Prefacing the answer}
+  
+  What matters is the portfolio return, $R_p$, which is itself a random variable:
+  \[R_p = \omega R_s + (1-\omega) R_b \]
+
+  where $\omega$ is the weight on stocks. \\
+  \pause
+  \vspace{1em}
+  \textbf{The objective}: ``Investors like high returns, but dislike high volatility'' \\
+    \vspace{1em}
+
+  \pause 
+  \textbf{Translating this into pseudo-math} --- the \textbf{return-to-risk
+  ratio}:
+
+  \[\frac{\text{Return}}{\text{Risk}} = \frac{\text{Average return of } R_p}{\text{Volatility of } R_p}.\]
+  \pause 
+  
+  \textbf{Translating pseudo-math to math object}:
+  \begin{insightbox}
+      \[ \text{Average return of } R_p \rightarrow \text{Expected value}\]
+      \vspace{-1em}
+      \[ \text{Volatility of } R_p \rightarrow \text{Variance}\]
+  \end{insightbox}
+
+\end{frame}
+
+% % =============================================================================
+% \section{Expected Value}
+% % =============================================================================
+
+\begin{frame}{Expected value, Seen on a Beam}
+
+  An analyst assigns three scenarios to next year's return:
+  \textcolor{vermillion}{\textbf{recession}}, normal year,
+  \textcolor{green}{\textbf{boom}}. \\
+  \vspace{1em}
+  
+  Picture the  probabilities as weights on a beam: the expected value is where it
+  \textbf{balances}.
+
+  \vspace{0.5em}
+  \begin{center}
+  \begin{tikzpicture}[font=\small]
+
+    % --- Beam ---
+    % Scenario labels sit low enough to clear the fulcrum triangle, which lands
+    % at x = 5.16 -- only 0.44 from the +8% tick. The gap they leave under the
+    % beam is deliberate: it is the slot the fulcrum drops into on overlay 3.
+    % Zero reference: the break-even point, interpolated between the -15% and
+    % +8% ticks. Drawn before the beam so the beam sits on top of it.
+    \draw[dashed, DarkGray] (4.0, -0.40) -- (4.0, 1.05);
+    \node[font=\scriptsize, DarkGray, above=2pt] at (4.0, 1.05) {$0\%$};
+
+    \draw[thick, black] (0, 0) -- (10.4, 0);
+    \foreach \x/\lab/\col in {0.9/{$-15\%$}/vermillion, 5.6/{$+8\%$}/black,
+                              9.5/{$+25\%$}/green}{
+      \draw[thick] (\x, 0.14) -- (\x, -0.14);
+      \node[below=4pt, font=\small, \col] at (\x, -0.60) {\lab};
+    }
+    \node[font=\scriptsize, vermillion] at (0.9, -1.15) {recession};
+    \node[font=\scriptsize, DarkGray] at (5.6, -1.15) {normal};
+    \node[font=\scriptsize, green] at (9.5, -1.15) {boom};
+
+    % --- Weights, sized by probability ---
+    \node[draw=blue, fill=blue!25, minimum width=0.70cm, minimum height=0.42cm,
+          font=\scriptsize] at (0.9, 0.41) {.20};
+    \node[draw=blue, fill=blue!25, minimum width=1.35cm, minimum height=0.80cm,
+          font=\scriptsize] at (5.6, 0.60) {.60};
+    \node[draw=blue, fill=blue!25, minimum width=0.70cm, minimum height=0.42cm,
+          font=\scriptsize] at (9.5, 0.41) {.20};
+
+    % Row labels, placed left of the beam like axis labels: the boxes are
+    % probabilities, the numbers on the beam are the values X takes.
+    \node[font=\scriptsize, DarkGray, align=right, anchor=east] at (0.30, 0.52)
+      {probability\\ $f(x)$};
+    \node[font=\scriptsize, DarkGray, align=right, anchor=east] at (0.30, -0.72)
+      {return\\ $x$};
+
+    % Reserve the fulcrum's space on every overlay, so the beam does not jump
+    % downward when the triangle appears on slide 3. Left edge covers the row
+    % labels above.
+    \path (-1.45, -1.95) rectangle (10.4, 1.05);
+
+    % --- Fulcrum at the mean: 0.2(-15) + 0.6(8) + 0.2(25) = 6.8 ---
+    % Overlay 3: the answer is computed first, then located on the beam.
+    \only<3->{
+      % Black, not vermillion: on this slide red now means "recession", so the
+      % fulcrum stays a neutral pivot. The overlay reveal supplies the emphasis.
+      \fill[black] (5.16, -0.06) -- (4.88, -0.52) -- (5.44, -0.52) -- cycle;
+      \node[black, font=\small\bfseries] at (5.16, -1.68)
+        {$\E[R] = 6.8\%$};
+    }
+
+  \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.8em}
+  \onslide<2->{
+  \begin{insightbox}
+    $0.2(-15) + 0.6(8) + 0.2(25) = 6.8$. The balance point sits a little
+    \emph{left} of the ``normal'' scenario, because the
+    \textcolor{vermillion}{\textbf{recession}} is further from it than the
+    \textcolor{green}{\textbf{boom}} is.
+    \textbf{Distance matters as much as probability.}
+  \end{insightbox}}
+
+\end{frame}
+
+\begin{frame}{Expected Value, in Math}
+
+  \vspace{0.9em}
+  % equal height group forces the two boxes to the same size; it settles on the
+  % second XeLaTeX pass, so the 3-pass build is required here.
+  {\tcbset{equal height group=EV}
+  \begin{columns}[T]
+    \begin{column}{0.47\textwidth}
+      \begin{definitionbox}[Discrete $X$]
+        Taking values $x_1, \ldots, x_k$:
+        \[
+          \E[X] = \sum_{j=1}^{k} x_j\, f(x_j).
+        \]
+      \end{definitionbox}
+      Each possible value, \textbf{weighted by how likely it is}.
+
+    \end{column}
+    \pause
+    \begin{column}{0.47\textwidth}
+      \begin{definitionbox}[Continuous $X$]
+        The sum becomes an integral:
+        \[
+          \E[X] = \vphantom{\sum_{j=1}^{k}} \int x\, f(x)\, dx.
+        \]
+      \end{definitionbox}
+    \end{column}
+  \end{columns}}
+  \pause 
+  \vspace{2em}
+
+  \begin{insightbox}
+      We usually denote the expected value as a constant $\mu = \E[X]$. \\
+
+      The expected value is also referred to as the ``first moment.''
+  \end{insightbox}
+
+\end{frame}
+
+
+\begin{frame}{Expected value, Seen on a Distribution}
+
+   \vspace{0.9em}
+  % equal height group forces the two boxes to the same size; it settles on the
+  % second XeLaTeX pass, so the 3-pass build is required here.
+  {\tcbset{equal height group=EV}
+  \begin{columns}[T]
+    \begin{column}{0.47\textwidth}
+      \includegraphics[width=\textwidth]{p2_moment_mean.pdf}
+    \end{column}
+    
+    \begin{column}{0.47\textwidth}
+      \begin{definitionbox}[Continuous $X$]
+        The sum becomes an integral:
+        \[
+          \E[X] = \vphantom{\sum_{j=1}^{k}} \int x\, f(x)\, dx.
+        \]
+      \end{definitionbox}
+    \end{column}
+  \end{columns}}
+
+
+
+  % MOMENT ANCHOR 1. The anchor frames all show the SAME normal density with a
+  % different feature marked on it, so "moment" becomes a visible property of a
+  % shape rather than an algebraic word. Keep them visually consistent; if one is
+  % edited, check the others still match.  Figures: scripts/R/part2_figures.R
+  % (The second-moment anchor was dropped: the Standard Deviation frame now
+  % carries p2_moment_variance.pdf directly.)
+
+\end{frame}
+
+
+% -----------------------------------------------------------------------------
+% Sets up the population/sample distinction early, so the "One Problem Remains"
+% frame at the end of the deck lands as a payoff rather than a surprise. Note the
+% notation registry: the sample mean is \bar{X}, never \hat{\mu}.
+% -----------------------------------------------------------------------------
+\begin{frame}{Expected value $\neq$ Sample mean}
+
+  Colloquially, we refer to the expected value as the mean, but let's be more
+  precise.
+
+  \vspace{1em}
+
+  \centering
+  \renewcommand{\arraystretch}{1.3}
+  {
+  \begin{tabular}{@{} l p{4.3cm} p{4.9cm} @{}}
+    \toprule
+     & \textbf{Expected value} & \textbf{Sample mean} \\
+    \midrule
+    Symbol & $\E[X]$ & $\bar{X}$ \\
+
+    Formula & $\sum_j x_j\, f(x_j)$
+            & $\frac{1}{n}\sum_{i=1}^{n} x_i$ \\
+
+    Built from & the \textbf{true} distribution $f(x)$
+               & $n$ \textbf{observed} data points \\
+
+    Is it random? & \textbf{No} --- one fixed number
+                  & \textbf{Yes} --- a new sample gives a new value \\
+    \bottomrule
+  \end{tabular}}
+  \pause
+
+  \vspace{0.5em}
+  \begin{definitionbox}[Law of Large Numbers]
+      If $X_1, \ldots, X_n$ are \textbf{independent} draws from the \textbf{same}
+      distribution (i.i.d.), and $\E|X|$ is finite, then
+        \[
+          \bar{X} \;\convp\; \E[X]
+          \qquad \text{as } n \to \infty.
+        \]
+      The $p$ over the arrow reads \textit{in probability}: draw enough times and $\bar{X}$ lands within any margin you name of $\E[X]$.
+  \end{definitionbox}
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% The coin is the one case where E[X] is known exactly (0.5) without estimating
+% anything, so the convergence can be SHOWN rather than asserted.
+% Figure: scripts/R/part2_figures.R, section 13.
+% -----------------------------------------------------------------------------
+\begin{frame}{Flip a Coin until $\bar{X} \to \E[X]$}
+
+  \begin{columns}
+    \begin{column}{0.55\textwidth}
+      \vspace{1.2em}
+      \includegraphics[width=\textwidth]{p2_lln_coinflip.pdf}
+
+      \vspace{0.1em}
+      {\tiny\textcolor{lightgray}{One run of 10{,}000 flips of a fair coin,
+      recomputing $\bar{X}$ after every flip. Horizontal axis on a log scale.}}
+    \end{column}
+    \begin{column}{0.41\textwidth}
+      \vspace{0.3em}
+      Heads $X = 1$, tails $X = 0$. 
+            \vspace{0.5em}
+
+      $\bar{X}$ is the sample mean of the 0's and 1's. This is the share of heads. 
+            \vspace{0.5em}
+
+      Since coin is fair, $\E[X] = \mathbf{0.5}$.
+            \vspace{0.5em}
+     
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+\begin{frame}{Linearity of Expected Values}
+
+  \begin{columns}[T]
+    \begin{column}{0.54\textwidth}
+      \begin{methodbox}
+        \textbf{E.1} \quad For any constant $c$: \quad $\E[c] = c$.
+      \end{methodbox}
+      \pause
+
+      \vspace{0.5em}
+      \begin{methodbox}
+        \textbf{E.2} \quad For any constants $a$ and $b$:
+        \[
+          \E[aX + b] = a\,\E[X] + b.
+        \]
+      \end{methodbox}
+      \pause
+
+      \vspace{0.5em}
+      \begin{methodbox}
+        \textbf{E.3} \quad For constants $a_1, \ldots, a_n$:
+        \[
+          \E[a_1 X_1 + \cdots + a_n X_n]
+            = a_1 \E[X_1] + \cdots + a_n \E[X_n].
+        \]
+      \end{methodbox}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \vspace{1.5em}
+      \pause
+      \begin{questionbox}
+        A fund charges a flat 1\% per year. The gross return is
+      $R$. What's the expected net return?
+      \end{questionbox}
+      \pause
+      \begin{answerbox}
+        Using E.2,
+        \[
+         \E[R - 0.01] = \E[R] - 0.01.
+         \]
+      \end{answerbox}
+    
+      \vspace{0.3em}
+      Fees come straight off the top of the expected return.
+    \end{column}
+  \end{columns}
+
+  \vspace{0.3em}
+
+\end{frame}
+
+\begin{frame}{Expected Return on a Portfolio}
+
+  \begin{columns}[T]
+    \begin{column}{0.54\textwidth}
+
+      \begin{questionbox}
+        The portfolio return is
+          \[
+            R_p = \omega R_s + (1 - \omega) R_b.
+          \]
+        Consider $\omega$ fixed. What is the expected return?
+      \end{questionbox}
+      \pause
+      \vspace{0.5em}
+      \begin{answerbox}
+        Using E.3,
+        \[
+          \E[R_p] = \omega\, \E[R_s] + (1 - \omega)\, \E[R_b].
+        \]
+      \end{answerbox}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \vspace{1.5em}
+      \pause
+      \begin{insightbox}
+        The expected return of a portfolio is just the \textbf{weighted
+        average} of the pieces.
+      \end{insightbox}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+% =============================================================================
+% \section{Variance and Standard Deviation}
+% =============================================================================
+
+\begin{frame}{The Expected Value Is Not Enough}
+
+  % Explicit overlay specs, NOT \pause: \pause numbers sequentially through the
+  % whole frame source, so the right-hand figure -- being last in the source --
+  % would only appear on the final overlay. The figure must land with the first
+  % question, hence <1->.
+  \begin{columns}[T]
+    \begin{column}{0.44\textwidth}
+      \vspace{0.5em}
+      Consider you have two portfolios that give you the same expected return, but one distribution is more dispersed than the other.
+
+      \vspace{0.8em}
+      \begin{questionbox}
+        Which one would you take? Why?
+      \end{questionbox}
+      \onslide<2->{
+      \begin{questionbox}
+        How to measure dispersion around the mean?
+      \end{questionbox}}
+      \vspace{0.6em}
+
+      \onslide<3->{\textit{Natural idea}: measure the typical distance from $X$
+      to its mean $\mu$.}
+    \end{column}
+    \begin{column}{0.52\textwidth}
+      \vspace{1.5em}
+      \onslide<1->{\includegraphics[width=\textwidth]{p2_spread_same_mean.pdf}}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.3em}
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% Scoped to the CHOICE among dispersion measures. The sign-cancellation argument
+% (E[X - mu] = 0) belongs to the next frame -- keep the two from drifting into
+% each other.
+% -----------------------------------------------------------------------------
+\begin{frame}{Variance}
+
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \begin{definitionbox}[Variance]
+        \[
+          \var(X) = \E\!\left[(X - \mu)^2\right] = \sigma^2.
+        \]
+        The expected \textbf{squared} distance from the mean.
+      \end{definitionbox}
+
+      \onslide<2->{
+      \vspace{0.7em}
+      It is not the only candidate:
+
+      \vspace{0.3em}
+      \begin{methodbox}
+        {\small
+        \textbf{Mean absolute deviation}
+          \hfill $\E\!\left\lvert X - \mu \right\rvert$ \\[0.3em]
+        \textbf{Median absolute deviation}
+          \hfill $\text{med}\!\left\lvert X - \text{med}(X) \right\rvert$ \\[0.3em]
+        \textbf{Range} \hfill $\max - \min$}
+      \end{methodbox}}
+    \end{column}
+
+    \begin{column}{0.46\textwidth}
+      \onslide<3->{\textbf{Nice things about variance:}}
+
+      \vspace{0.5em}
+      \begin{itemize}
+        \item[\textbullet] \onslide<3->{\textbf{Smooth.} $\var[X]$ is
+              differentiable, which comes in really handy when deriving
+              solutions to portfolio problems.}
+              \vspace{0.5em}
+        \item[\textbullet] \onslide<4->{\textbf{Punishes large deviations.}
+              Points far from the mean count more towards the variance. Note
+              that positive and negative deviations are treated equally.}
+              \vspace{0.5em}
+        % The formula itself now lives on the "Properties of Variance" frame as
+        % VAR.3; only the argument for WHY it matters belongs here.
+        %  \item[\textbullet] \onslide<5->{\textbf{It combines.} The variance of a
+        %       sum expands into the variances and a cross term. No such formula
+        %       exists for the absolute deviation --- this is why portfolio risk
+        %       can be computed at all.}
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+  \onslide<5->{\begin{insightbox}
+      We usually denote the variance as a constant $\sigma^2 = \var[X]$. \\
+
+      The variance is also referred to as the ``second moment.''
+  \end{insightbox}}
+
+
+\end{frame}
+
+
+\begin{frame}{Standard Deviation}
+
+  % Explicit overlay specs on the right column, NOT \pause: \pause numbers
+  % sequentially through the whole frame, which would hold the figure back to
+  % the final overlay. It should be on screen from the start.
+  \begin{columns}[T]
+    \begin{column}{0.47\textwidth}
+      Squaring created a problem. If $X$ is a return in percent, then
+      $\var(X)$ is in \textbf{percent squared} --- a unit that does not mean much.
+      \pause
+
+      \vspace{0.6em}
+      \begin{definitionbox}[Standard Deviation]
+        \[
+          \text{sd}(X) = \sqrt{\var(X)} = \sigma.
+        \]
+      \end{definitionbox}
+      \pause
+
+      \vspace{0.5em}
+      Taking the square root returns us to the \textbf{original units}. \\
+      
+      A standard deviation of 15\% per year is more meaningful because it carries the same unit as the mean. See graph.
+    \end{column}
+    \begin{column}{0.50\textwidth}
+      \vspace{1.2em}
+      \onslide<1->{\includegraphics[width=\textwidth]{p2_moment_variance.pdf}}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.2em}
+
+\end{frame}
+
+% Dropped: "The Second Moment, Seen on the Same Distribution". Its figure,
+% p2_moment_variance.pdf, now carries the Standard Deviation frame above, so the
+% anchor showed the same picture twice in a row.
+
+
+\begin{frame}{Properties of Variance}
+
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      % Build: 1 VAR.1 | 2 VAR.2+SD.2 and the note on b | 3 note swapped for the
+      % leverage panel | 4 VAR.3 and the covariance panel. All explicit overlay
+      % specs -- a stray \pause here would renumber both columns at once.
+      \begin{methodbox}
+        \textbf{VAR.1} \quad $\var(X) = 0$ exactly when $X$ is a constant.
+      \end{methodbox}
+
+      \vspace{0.4em}
+      \onslide<2->{
+      \begin{methodbox}
+        \textbf{VAR.2} \quad $\var(aX + b) = a^2 \var(X)$.
+      \end{methodbox}}
+
+      \vspace{0.4em}
+      \onslide<2->{
+      \begin{methodbox}
+        \textbf{SD.2} \quad $\text{sd}(aX + b) = |a| \cdot \text{sd}(X)$.
+      \end{methodbox}}
+
+      \vspace{0.4em}
+      % The covariance term is not defined until the next section; flagged here
+      % rather than explained.
+      \onslide<4->{
+      \begin{methodbox}
+        \textbf{VAR.3}
+        % \small: at full size this display runs 11pt past the 0.50 column
+        {\small
+        \[
+          \var(aX + bY) = a^2\var(X) + b^2\var(Y) + 2ab\,\cov(X, Y).
+        \]}
+      \end{methodbox}}
+    \end{column}
+    % The right column SWAPS content rather than accumulating: the note on b
+    % holds overlay 2, the leverage picture takes 3, the cross term takes 4.
+    % \only, not \onslide, so each retired panel leaves no gap behind.
+    \begin{column}{0.46\textwidth}
+      % 0.7em, not 1.2em: overlay 3 is the tallest panel (two lines of setup +
+      % figure + insightbox) and overran the frame by ~2pt at the larger value.
+      \vspace{0.7em}
+      \only<2>{
+        \begin{insightbox}
+          Note what $b$ does in VAR.2: \textbf{nothing}. A sideways shift moves
+          the center, not the spread.
+        \end{insightbox}}
+      \only<3>{
+       Assume you take a leveraged position in the market, you borrow \$1 for
+       every \$1 you invest out-of-pocket.
+        \includegraphics[width=\textwidth]{p2_leverage.pdf}
+        \begin{insightbox}
+          \textbf{Leverage} doubles your return (E.2) but SD.2 tells us that it
+          also \textbf{doubles} the standard deviation.
+        \end{insightbox}}
+      \only<4->{
+        \vspace{12em}
+        \begin{insightbox}
+          Notice the $\cov(X, Y)$ term! It has a natural meaning in the context
+          of portfolio returns. We'll discuss in next slides.
+        \end{insightbox}}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+% =============================================================================
+% \section{Covariance and Correlation}
+% =============================================================================
+
+\begin{frame}{Covariance}
+
+  % [c] centres each column on its own vertical midpoint; [T] aligns their tops.
+  \begin{columns}[c]
+    \begin{column}{0.44\textwidth}
+      \begin{definitionbox}[Covariance]
+        \vspace{-1em}
+        \[
+          \cov(X, Y) = \E\!\left[(X - \mu_X)(Y - \mu_Y)\right].
+        \]
+      \end{definitionbox}
+    \end{column}
+    \begin{column}{0.52\textwidth}
+      One way to read this definition:
+      \begin{itemize}
+        \item covariance is \textcolor{green}{positive} when $X$ and $Y$ co-move around their means on average.   
+        \item covariance is \textcolor{vermillion}{negative} when $X$ and $Y$ move in opposite directions around their means on average.   
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \pause
+  \vspace{2em}
+    \begin{columns}[T]
+    \begin{column}{0.44\textwidth}
+      % Expanding the product and applying E.3 gives this; it is the form you
+      % actually compute with, since it needs only three ordinary expectations.
+      \begin{methodbox}
+        Another way of writing covariance:
+        \[
+          \cov(X, Y) = \E[XY] - \mu_X\, \mu_Y.
+        \]
+      \end{methodbox}
+    \end{column}
+    \begin{column}{0.52\textwidth}
+      \vspace{2em}
+      This equivalent formulation highlights that what really matters is $E[XY]$!
+    \end{column}
+  \end{columns}
+   
+
+
+\end{frame}
+
+% COV.n numbering follows Wooldridge B-4b and matches the VAR.n / E.n labels
+% used on the variance and expectation frames, so the three families can be
+% pointed at by name later.
+% Build: 1 COV.1 | 2 COV.2 | 3 COV.3 | 4 COV.4 | 5 COV.5 + payoff. Explicit
+% specs, not \pause.
+% COV.4 (Cauchy-Schwarz) is what licenses the [-1,1] correlation bound asserted
+% on the correlation frame; COV.5 is what licenses Part 3 deleting the
+% covariance term from VAR.3 to get var(Xbar) = sigma^2/n.
+\begin{frame}{Properties of Covariance}
+
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \begin{methodbox}
+        \textbf{COV.1} \quad $\cov(X, Y) = \cov(Y, X)$.
+      \end{methodbox}
+
+      \vspace{0.4em}
+      \onslide<2->{
+      \begin{methodbox}
+        \textbf{COV.2} \quad $\cov(X, X) = \var(X)$.
+      \end{methodbox}}
+
+      \vspace{0.4em}
+      \onslide<3->{
+      \begin{methodbox}
+        \textbf{COV.3} \quad
+        $\cov(a_1X + b_1,\; a_2Y + b_2) = a_1 a_2 \cov(X, Y)$.
+      \end{methodbox}}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \onslide<4->{
+      \begin{methodbox}
+        \textbf{COV.4} \quad
+        $\lvert\cov(X, Y)\rvert \;\le\; \text{sd}(X)\,\text{sd}(Y)$.
+      \end{methodbox}}
+
+      \vspace{0.4em}
+      \onslide<5->{
+      \begin{methodbox}
+        \textbf{COV.5} \quad If $X$ and $Y$ are \textbf{independent},
+        then $\cov(X, Y) = 0$.
+      \end{methodbox}}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+\begin{frame}{Covariance Has a Units Problem}
+
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      % Computed on the SAME two series plotted on "Question of the lesson"
+      % (Shiller S&P nominal total return vs 10-year Treasury, 992 months).
+      % scripts/R/part2_figures.R prints it as qotd_cov. The CRSP stock series
+      % gives +0.0000812 instead -- do not mix the two.
+      Using monthly returns, 1941–2023, the \textit{sample} covariance is
+      \[
+        \widehat{\cov}(R_s, R_b) = -0.0000265.
+      \]
+      \pause
+      \vspace{-2em}
+      % \footnotesize throughout: four stacked boxes plus the equation do not
+      % fit this column at body size, and \small still overran the frame.
+      {\footnotesize
+      \begin{questionbox}
+        Is that a big number or a small one?
+      \end{questionbox}
+      \pause
+      \begin{answerbox}
+        Impossible to say --- quoted in percent, the same covariance reads
+        $-0.265$.
+      \end{answerbox}
+      \pause
+      \begin{questionbox}
+        What are the units?
+      \end{questionbox}
+      \pause
+      \begin{answerbox}
+        Return units \textbf{squared} --- covariance carries the units of
+        \emph{both} variables.
+      \end{answerbox}}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \vspace{1.5em}
+      % One \pause only: a second one here (there used to be one closing the
+      % left column too) bought a dead overlay showing nothing new.
+      \pause
+      \begin{definitionbox}[Correlation]
+        \[
+          \corr(X, Y) = \frac{\cov(X, Y)}{\text{sd}(X)\,\text{sd}(Y)}
+        \]
+      \end{definitionbox}
+      \pause
+      \vspace{1.2em}
+      Nice properties of correlations:
+      \vspace{0.5em}
+      \begin{itemize}
+        \item Dividing by both standard deviations cancels the units. Correlations are unit-less 
+        \item Correlations are always bounded:
+      \end{itemize}
+        \[\quad -1 \leq \corr(X, Y) \leq 1\]
+
+      % Source for the covariance figure in the left column. It lives here
+      % rather than under the left column or the frame: the four stacked Q/A
+      % boxes fill that side exactly, and this column has the slack.
+      \vspace{0.6em}
+      {\tiny\textcolor{lightgray}{S\&P Composite total return from Shiller;
+      10-year Treasury returns from the course data; 992 monthly
+      observations.}}
+    \end{column}
+  \end{columns}
+
+
+\end{frame}
+
+\begin{frame}{What Correlation Looks Like}
+
+  \centering
+  \includegraphics[width=0.68\textwidth]{p2_corr_panels.pdf}
+  \pause
+
+  \vspace{0.3em}
+  \raggedright
+  \begin{columns}[T]
+    \begin{column}{0.30\textwidth}
+      \textbf{Near $-1$:} a tight downward line. One goes up, the other goes
+      down.
+    \end{column}
+
+    \begin{column}{0.30\textwidth}
+      \textbf{Near $0$:} a shapeless cloud. Knowing $X$ tells you nothing linear
+      about $Y$.
+    \end{column}
+
+    \begin{column}{0.30\textwidth}
+      \textbf{Near $+1$:} a tight upward line. They move together.
+    \end{column}
+  \end{columns}
+  \pause
+
+  \vspace{0.6em}
+  \begin{insightbox}
+    Correlation measures how close the cloud is to a \textbf{straight line}, and
+    which way that line tilts. 
+  \end{insightbox}
+
+\end{frame}
+
+
+% Mirrors the "Expected Return on a Portfolio" frame -- same question/answer
+% shape, same two-column layout -- so the contrast between the two results is
+% structural and not just verbal.
+\begin{frame}{Variance of Portfolio Returns}
+
+  \begin{columns}[T]
+    \begin{column}{0.54\textwidth}
+
+      \begin{questionbox}
+        The portfolio return is
+          \[
+            R_p = \omega R_s + (1 - \omega) R_b.
+          \]
+        Consider $\omega$ fixed. What is the variance?
+      \end{questionbox}
+      \pause
+      \vspace{0.5em}
+      \begin{answerbox}
+        Applying VAR.3,
+        \begin{align*}
+          \var(R_p) = \;& \omega^2 \var(R_s) + (1 - \omega)^2 \var(R_b) \\
+                        & + \, 2\,\omega(1 - \omega)\, \cov(R_s, R_b).
+        \end{align*}
+      \end{answerbox}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \vspace{12em}
+        \begin{insightbox}
+          If $\cov(X, Y) < 0$, this means $X$ and $Y$
+          go in opposite directions, which implies that 
+          the total variance drops \emph{below} the sum of the parts.
+        \end{insightbox}
+        \textcolor{blue}{\textbf{That is hedging}}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+
+% The payoff frame for the question of the lesson: risk is now sd rather than
+% var, because the Standard Deviation frame established that only sd carries the
+% same units as the numerator. A ratio of a return to a percent-squared would
+% not mean anything.
+\begin{frame}{Answering the Risk--Return Question}
+  
+  ``Investors like high returns, but dislike high volatility'' was translated as
+  \[\frac{\text{Return}}{\text{Risk}} = \frac{\text{Average return of } R_p}{\text{Volatility of } R_p}.\]
+  \pause
+  \vspace{0.6em}
+  More formally, the risk--return profile of the portfolio is
+  \[\frac{\E[R_p]}{\text{sd}(R_p)}, \qquad \text{sd}(R_p) = \sqrt{\var(R_p)},\]
+  where
+  \pause
+
+  \vspace{-0.4em}
+  % Both are results already derived: E.3 for the numerator, VAR.3 for the
+  % denominator. Numbered so they can be pointed at when the tradeoff is
+  % discussed.
+  \begin{columns}[T]
+    \begin{column}{0.46\textwidth}
+      \begin{methodbox}
+        \textbf{Numerator} 
+        \[
+          \E[R_p] = \omega\, \E[R_s] + (1 - \omega)\, \E[R_b]
+        \]
+      \end{methodbox}
+    \end{column}
+    \begin{column}{0.50\textwidth}
+      \begin{methodbox}
+        \textbf{Denominator} 
+        {\small
+        \begin{align*}
+          \var(R_p) = \;& \omega^2 \var(R_s) + (1 - \omega)^2 \var(R_b) \\
+                        & + \, 2\,\omega(1 - \omega)\, \cov(R_s, R_b)
+        \end{align*}}
+      \end{methodbox}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+
+
+
+
+
+
+% ---- MOMENT ANCHOR 3 of 6 ---------------------------------------------------
+\begin{frame}{The Third Moment: Which Side Is Heavier}
+
+  \begin{columns}[T]
+    \begin{column}{0.56\textwidth}
+      \vspace{1.4em}
+      \includegraphics[width=\textwidth]{p2_moment_skewness.pdf}
+    \end{column}
+    \begin{column}{0.40\textwidth}
+      \vspace{0.3em}
+      \begin{definitionbox}[Skewness]
+        \[
+          \text{skew}(X) = \frac{\E\!\left[(X-\mu)^3\right]}{\sigma^3}
+        \]
+        Symmetric distribution skew = 0 
+      \end{definitionbox}
+      \pause
+
+      \vspace{0.5em}
+      \begin{insightbox}
+        \textbf{Negative skew:} most months mildly good, a few catastrophically
+        bad.
+      \end{insightbox}
+      \pause
+
+      \vspace{0.5em}
+      % Shiller S&P monthly total returns; see scripts/R/part2_figures.R.
+      % Full history 1871-2026 gives +0.44 -- the sign flips with the sample.
+      % `orange` matches col_orange, the left-skewed curve in the figure.
+      S\&P monthly returns over 1941--2023:
+      Skew = $\textcolor{orange}{\mathbf{-0.89}}$
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+% ---- MOMENT ANCHOR 4 of 6 ---------------------------------------------------
+\begin{frame}{The Fourth Moment: How Fat the Tails Are}
+
+  \begin{columns}[T]
+    \begin{column}{0.58\textwidth}
+      \vspace{1.6em}
+      \includegraphics[width=\textwidth]{p2_moment_kurtosis.pdf}
+    \end{column}
+    \begin{column}{0.38\textwidth}
+      \vspace{0.3em}
+      \begin{definitionbox}[Kurtosis]
+        \[
+          \text{kurt}(X) = \frac{\E\!\left[(X-\mu)^4\right]}{\sigma^4}
+        \]
+        Normal distribution kurtosis = 3.
+      \end{definitionbox}
+      \pause
+
+      \vspace{0.5em}
+      % Shiller S&P monthly total returns; see scripts/R/part2_figures.R.
+      % Full history 1871-2026 gives 20.4, dropped here to match the format of
+      % the skewness slide.
+      % `orange` matches col_orange, the fat-tailed curve in the figure.
+      S\&P monthly returns over 1941--2023:
+      Kurtosis = $\textcolor{orange}{\mathbf{6.4}}$
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+% =============================================================================
+% \section{Recap}
+% =============================================================================
+
+\begin{frame}{Key Takeaways}
+
+  % One line per frame group actually in the deck. Deliberately terse -- the
+  % detail is on the slides; this is a checklist, not a summary.
+  \vspace{0.6em}
+  \begin{tabular}{@{} l p{9.6cm} @{}}
+    \textbf{Expected value} & $\E[X] = \sum_j x_j f(x_j)$ --- the balance point
+      of the distribution.  \\[0.6em]
+    \textbf{Mean $\neq$ expected value} & $\bar{X}$ comes from data and is
+      random; $\E[X]$ comes from the true distribution.
+      $\bar{X} \to \E[X]$ (LLN). \\[0.6em]
+    \textbf{Variance, sd} & $\var(X) = \E[(X-\mu)^2]$; $\sigma$ returns it to
+      the original units; captures volatility. \\[0.6em]
+    \textbf{Covariance, correlation} & $\cov$ captures comovement in variables. Correlation rescales $\cov$ into $[-1, 1]$. \\[0.6em]
+    \textbf{The risk--return answer} & $\E[R_p]$ is a weighted average.
+      $\var(R_p)$ is \emph{not}; $\cov$ is important in reducing volatility. \\[0.6em]
+    \textbf{Higher moments} & Skewness (3rd) and kurtosis (4th): which tail is
+      long, how much lives far out. Normal: $0$ and $3$
+  \end{tabular}
+
+\end{frame}
+
+
+\begin{frame}{References}
+  \footnotesize
+  \nocite{Shiller2024_data}
+  \bibliography{../latex_files/references}
+\end{frame}
+
+
+% =============================================================================
+% -----------------------------------------------------------------------------
+% PARKED 2026-08-19: the standardization appendix is on hold -- it may move to
+% the Part 3 deck, where Z reappears as the basis of every test statistic.
+% Kept commented rather than deleted so it can be lifted out whole.
+% -----------------------------------------------------------------------------
+% \appendix
+% % \section{Appendix}
+% % =============================================================================
+%
+% \begin{frame}{Standardizing: Putting Everything on One Scale}
+%
+%   \begin{columns}[T]
+%     \begin{column}{0.40\textwidth}
+%       \vspace{0.3em}
+%       \begin{definitionbox}[Standardization]
+%         \[
+%           Z = \frac{X - \mu}{\sigma}
+%         \]
+%       \end{definitionbox}
+%       \pause
+%
+%       \vspace{0.5em}
+%       Two steps, and the properties tell us the result:
+%       \begin{itemize}
+%         \item subtract $\mu$ \hfill {\small\textcolor{DarkGray}{by E.2, mean becomes 0}}
+%               \vspace{0.25em}
+%         \item divide by $\sigma$ \hfill {\small\textcolor{DarkGray}{by VAR.2, variance becomes 1}}
+%       \end{itemize}
+%       \pause
+%
+%       \vspace{0.6em}
+%       $Z$ answers one question: \textbf{how many standard deviations from the
+%       mean is this?}
+%
+%       \vspace{0.5em}
+%       {\small\textcolor{DarkGray}{(Standardize the normal from Part 1 and you
+%       get $\Normal(0,1)$ --- the \emph{standard} normal.)}}
+%     \end{column}
+%     \begin{column}{0.56\textwidth}
+%       \vspace{1.2em}
+%       \includegraphics[width=\textwidth]{p2_standardize.pdf}
+%       \pause
+%
+%       \vspace{0.2em}
+%       \begin{insightbox}
+%         The shape never changes --- only the axis. This one trick lets us
+%         compare a stock to a bond to a currency, and it returns in Part 3 as the
+%         basis of every test statistic.
+%       \end{insightbox}
+%     \end{column}
+%   \end{columns}
+%
+%   \vspace{0.2em}
+%
+% \end{frame}
+
+\end{document}
