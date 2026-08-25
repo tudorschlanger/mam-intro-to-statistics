@@ -18,8 +18,10 @@
 *.run.xml
 *-blx.bib
 
-# Compiled PDFs (uncomment to track specific PDFs)
+# Compiled PDFs — ignored everywhere except the finished decks, which are
+# tracked so they can be read without a LaTeX install.
 *.pdf
+!drafts/slides/*.pdf
 
 # Python
 __pycache__/
