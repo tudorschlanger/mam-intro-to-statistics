@@ -52,3 +52,8 @@ CLAUDE.local.md
 # Output artifacts — uncomment lines below based on your preference
 # *.rds
 # output/**/*.rds
+
+# Reference material and received course bundles — kept on disk, never committed.
+# Includes third-party copyrighted PDFs and another course's data/code, neither
+# of which is ours to redistribute.
+docs/
